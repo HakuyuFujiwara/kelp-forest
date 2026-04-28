@@ -3,630 +3,4188 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<meta name="theme-color" content="#061821" />
-<title>Tangled Tides — Save the Kelp Forest</title>
-<meta name="description" content="A 30-45 minute ecosystem game for 8th graders. Build a kelp forest food web, watch it collapse, and figure out how to bring it back." />
+<meta name="theme-color" content="#0a0a0d" />
+<title>ATLAS // Kelp forest food-web simulator</title>
+<meta name="description" content="A classroom kit and live simulator for 8th-grade ecology. Model trophic cascades in a California kelp forest." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..900,30..100&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --abyss:#061821; --ocean:#0a2540; --ocean-2:#0c2c4d;
-    --surface:#103452; --surface-2:#16486a;
-    --line:rgba(245,241,232,.10); --line-strong:rgba(245,241,232,.22);
-    --cream:#fbf7ef; --mist:#b6c8d6; --mute:#7e95a8;
-    --kelp:#74c365; --coral:#ff6b5b; --sun:#ffd166; --aqua:#5fe0d6;
-    --r-md:14px; --r-lg:22px; --r-xl:32px;
+    /* monochrome warm phosphor — based on Apollo amber CRT terminals */
+    --bg:        #0a0a0d;
+    --bg-soft:   #0e0e12;
+    --bg-panel:  #111114;
+    --line:      rgba(212, 208, 192, 0.10);
+    --line-2:    rgba(212, 208, 192, 0.20);
+    --line-3:    rgba(212, 208, 192, 0.32);
+
+    --txt:       #d4d0c0;     /* primary, warm CRT cream */
+    --dim:       #7a766b;     /* secondary */
+    --mute:      #4a4842;     /* tertiary */
+    --void:      #2a2825;
+
+    --phos:      #e8a948;     /* phosphor amber - active accent */
+    --phos-dim:  rgba(232, 169, 72, 0.55);
+    --phos-bg:   rgba(232, 169, 72, 0.06);
+
+    --alert:     #d24c40;     /* warning red */
+    --alert-bg:  rgba(210, 76, 64, 0.06);
+    --safe:      #88c4a0;     /* recovery teal-green */
+    --safe-bg:   rgba(136, 196, 160, 0.06);
+
+    --mono: 'IBM Plex Mono', 'Menlo', monospace;
+    --serif: 'IBM Plex Serif', Georgia, serif;
   }
-  *, *::before, *::after { box-sizing:border-box; }
-  html, body { margin:0; padding:0; }
-  html { scroll-behavior:smooth; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
   body {
-    background:var(--ocean);
-    color:var(--cream);
-    font-family:'Plus Jakarta Sans', system-ui, sans-serif;
-    font-weight:500; line-height:1.55;
-    overflow-x:hidden; min-height:100vh;
-    background-image:
-      radial-gradient(1100px 700px at 8% -10%, rgba(116,195,101,.10), transparent 60%),
-      radial-gradient(900px 700px at 110% 10%, rgba(95,224,214,.08), transparent 60%),
-      radial-gradient(700px 500px at 50% 110%, rgba(255,107,91,.10), transparent 65%),
-      linear-gradient(180deg, #061821 0%, #0a2540 35%, #0c2c4d 100%);
+    background: var(--bg);
+    color: var(--txt);
+    font-family: var(--mono);
+    font-size: 13.5px;
+    font-weight: 400;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  h1, h2, h3, h4 {
-    font-family:'Fraunces', Georgia, serif;
-    font-variation-settings:"SOFT" 100, "opsz" 144;
-    font-weight:700; line-height:1.04; letter-spacing:-.02em;
-    margin:0 0 .4em;
-  }
-  p { margin:0 0 1em; }
-  a { color:var(--aqua); text-decoration:none; }
-  a:hover { text-decoration:underline; }
-  .scribble { font-family:'Caveat', cursive; font-weight:700; color:var(--sun); }
-
-  .container { max-width:1080px; margin:0 auto; padding:0 22px; }
-
-  /* topstrip */
-  .topstrip {
-    padding:18px 22px; display:flex; justify-content:space-between; align-items:center;
-    gap:14px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--mist);
-  }
-  .topstrip .mark { display:inline-flex; align-items:center; gap:9px; color:var(--cream); font-weight:700; }
-  .topstrip .mark .dot {
-    width:10px; height:10px; border-radius:50%; background:var(--kelp);
-    box-shadow:0 0 0 3px rgba(116,195,101,.25);
-  }
-  .topstrip .partners { display:none; }
-  @media (min-width:720px) { .topstrip .partners { display:inline-flex; gap:22px; } }
-
-  /* WIP banner */
-  .wip-banner {
-    background:rgba(255,209,102,.12);
-    border-bottom:1px solid rgba(255,209,102,.3);
-    padding:10px 22px;
-    text-align:center;
-    font-size:12.5px;
-    color:var(--sun);
-    letter-spacing:.04em;
-  }
-  .wip-banner strong { color:var(--cream); }
-
-  /* hero */
-  .hero { padding:30px 0 60px; }
-  .hero-grid { display:grid; grid-template-columns:1fr; gap:30px; align-items:center; }
-  @media (min-width:880px) { .hero-grid { grid-template-columns:1.15fr .9fr; gap:40px; } .hero { padding:40px 0 80px; } }
-
-  .eyebrow {
-    display:inline-flex; align-items:center; gap:10px;
-    padding:6px 12px; border:1px solid var(--line-strong); border-radius:999px;
-    font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--mist);
-  }
-  .eyebrow .pip { width:6px; height:6px; border-radius:50%; background:var(--coral); }
-
-  .hero h1 {
-    font-size:clamp(44px, 8.6vw, 92px);
-    margin:18px 0 14px;
-    font-variation-settings:"SOFT" 100, "opsz" 144, "wght" 800;
-  }
-  .hero h1 .ink {
-    background:linear-gradient(180deg, var(--cream), #ddd5c4);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .hero h1 .pop {
-    display:inline-block; color:var(--kelp);
-    position:relative; transform:rotate(-2deg);
-  }
-  .hero h1 .pop::after {
-    content:""; position:absolute; left:-4%; right:-4%; bottom:-4%; height:18%;
-    background:var(--coral); opacity:.25; border-radius:6px; z-index:-1;
-  }
-  .hero .lede { font-size:clamp(16px, 2vw, 19px); color:var(--mist); max-width:50ch; margin-bottom:28px; }
-
-  .hero-meta {
-    display:flex; flex-wrap:wrap; gap:22px 28px;
-    margin:28px 0 30px; color:var(--mist); font-size:13.5px;
-  }
-  .hero-meta .stat strong {
-    display:block;
-    font-family:'Fraunces', serif; font-variation-settings:"SOFT" 100;
-    color:var(--cream); font-size:26px; font-weight:700; letter-spacing:-.02em;
-    line-height:1; margin-bottom:6px;
+  /* very subtle scanline only — barely there */
+  body::after {
+    content: ""; position: fixed; inset: 0;
+    pointer-events: none; z-index: 99;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 3px,
+      rgba(0,0,0,.10) 3px,
+      rgba(0,0,0,.10) 4px
+    );
+    opacity: .5;
   }
 
-  .cta-row { display:flex; flex-wrap:wrap; gap:12px; }
-  .btn {
-    display:inline-flex; align-items:center; gap:10px;
-    padding:16px 22px; border-radius:999px; border:none; cursor:pointer;
-    font-family:inherit; font-weight:700; font-size:15px;
-    color:var(--abyss); background:var(--coral);
-    box-shadow:0 10px 22px -8px rgba(255,107,91,.65);
-    transition:transform .15s, background .15s;
-  }
-  .btn:hover { transform:translateY(-2px); background:#ff7a6b; text-decoration:none; }
-  .btn-ghost { background:transparent; color:var(--cream); border:1.5px solid var(--line-strong); box-shadow:none; }
-  .btn-ghost:hover { background:rgba(255,255,255,.06); border-color:var(--cream); }
+  ::selection { background: var(--phos); color: var(--bg); }
 
-  .hero-art {
-    aspect-ratio:4/5; max-height:480px;
-    border-radius:var(--r-xl); overflow:hidden;
+  a { color: var(--phos); text-decoration: none; border-bottom: 1px dotted var(--phos-dim); }
+  a:hover { color: var(--txt); border-color: var(--txt); }
+
+  .hr {
+    height: 1px;
+    background: var(--line-2);
+    border: 0;
+  }
+
+  /* ========================================================
+     LAYOUT
+     ======================================================== */
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+  }
+
+  /* ========================================================
+     HEADER
+     ======================================================== */
+  .topbar {
+    border-bottom: 1px solid var(--line-2);
+    background: var(--bg);
+    padding: 10px 0;
+    font-size: 11.5px;
+    color: var(--dim);
+    letter-spacing: .04em;
+  }
+  .topbar .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .topbar .id {
+    color: var(--txt);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .topbar .id::before {
+    content: "";
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: var(--phos);
+    box-shadow: 0 0 6px var(--phos);
+    animation: blink 1.6s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: .3; } }
+  .topbar .meta {
+    display: none;
+    gap: 18px;
+  }
+  @media (min-width: 720px) { .topbar .meta { display: flex; } }
+  .topbar .meta span span { color: var(--txt); margin-left: 4px; }
+  .topbar .meta .compiled-meta {
+    color: var(--mute);
+    font-size: 10.5px;
+    letter-spacing: .08em;
+  }
+  .topbar .meta .compiled-meta span { color: var(--dim); }
+
+  /* ========================================================
+     TITLE BLOCK
+     ======================================================== */
+  .titleblock {
+    padding: 60px 0 50px;
+    border-bottom: 1px solid var(--line);
+  }
+  @media (min-width: 720px) { .titleblock { padding: 80px 0 60px; } }
+  .titleblock .doc-id {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: .14em;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .titleblock .doc-id strong { color: var(--phos); }
+  .titleblock h1 {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: clamp(32px, 5.5vw, 56px);
+    color: var(--txt);
+    margin: 0 0 14px;
+    line-height: 1.05;
+    letter-spacing: -.01em;
+  }
+  .titleblock h1 .lo { color: var(--dim); font-weight: 300; }
+  /* CRT block cursor — sits at the end of the title, blinks like a terminal prompt */
+  .titleblock h1 .crt-caret {
+    display: inline-block;
+    width: 0.42em;
+    height: 0.92em;
+    margin-left: 0.12em;
+    vertical-align: -0.12em;
+    background: var(--phos);
+    box-shadow: 0 0 6px var(--phos-dim), 0 0 14px rgba(232,169,72,0.25);
+    animation: crtCaret 1.05s steps(1) infinite;
+    transform: translateY(0.04em);
+  }
+  @keyframes crtCaret {
+    0%, 55% { opacity: 1; }
+    56%, 100% { opacity: 0; }
+  }
+  .titleblock .abstract {
+    font-family: var(--serif);
+    font-size: clamp(15px, 1.8vw, 18px);
+    color: var(--txt);
+    max-width: 60ch;
+    font-weight: 400;
+    line-height: 1.55;
+    margin: 0;
+  }
+  .titleblock .abstract em {
+    font-style: italic;
+    color: var(--phos);
+  }
+
+  /* ========================================================
+     TERMINAL (the simulator)
+     ======================================================== */
+  .terminal {
+    margin: 60px 0 50px;
+    border: 1px solid var(--line-2);
+    background: var(--bg-soft);
+    position: relative;
+  }
+  @media (min-width: 720px) { .terminal { margin: 80px 0 70px; } }
+  .terminal::before {
+    content: ""; position: absolute;
+    inset: 4px;
+    border: 1px solid var(--line);
+    pointer-events: none;
+  }
+  .term-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line-2);
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    background: var(--bg);
+  }
+  .term-header .left {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .term-header .left strong {
+    color: var(--phos);
+    font-weight: 500;
+  }
+  .term-header .lights {
+    display: flex; gap: 5px;
+  }
+  .term-header .lights span {
+    width: 6px; height: 6px;
+    background: var(--mute);
+  }
+  .term-header .lights span.on { background: var(--phos); box-shadow: 0 0 5px var(--phos); }
+  .term-header .right { color: var(--dim); }
+  .term-header .right span { color: var(--txt); }
+
+  .term-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  @media (min-width: 880px) {
+    .term-body { grid-template-columns: 1fr 320px; }
+  }
+
+  /* ===== TOP STAGE: ocean cross-section + main graph side-by-side ===== */
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-bottom: 1px solid var(--line-2);
+  }
+  @media (min-width: 880px) {
+    .stage { grid-template-columns: 1.15fr 1fr; }
+  }
+
+  /* OCEAN: live tech-cross-section */
+  .ocean {
+    position: relative;
+    aspect-ratio: 4/3;
     background:
-      radial-gradient(80% 60% at 50% 10%, rgba(255,209,102,.18), transparent 60%),
-      linear-gradient(180deg, #0d3358 0%, #061b2e 100%);
-    border:1px solid var(--line);
-    display:flex; align-items:center; justify-content:center;
-    font-size:120px;
-    position:relative;
+      /* sun glow at surface */
+      radial-gradient(ellipse 70% 28% at 50% 0%, rgba(232, 179, 96, 0.32), transparent 70%),
+      /* secondary surface highlight */
+      linear-gradient(180deg, rgba(232,179,96,0.18) 0%, transparent 12%),
+      /* main water column — teal/blue underwater color temperature */
+      linear-gradient(180deg,
+        #1a2a32 0%,
+        #142028 8%,
+        #0e1820 22%,
+        #0a141c 45%,
+        #060e16 70%,
+        #03080e 100%);
+    overflow: hidden;
+    border-bottom: 1px solid var(--line-2);
   }
-  .hero-art .lbl {
-    position:absolute; bottom:14px; left:0; right:0; text-align:center;
-    color:var(--mist); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  @media (min-width: 880px) {
+    .ocean { aspect-ratio: auto; min-height: 540px; border-bottom: 0; border-right: 1px solid var(--line-2); }
   }
-  .hero-art .lbl strong {
-    display:block; color:var(--cream);
-    font-family:'Fraunces', serif; font-size:16px; text-transform:none; letter-spacing:0;
-    font-weight:700; margin-bottom:4px;
+  /* AIR strip — thin band above the surface so the waterline reads */
+  .ocean::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 14px;
+    background: linear-gradient(180deg, #0a0a0d 0%, #0a0a0d 70%, rgba(232,179,96,0.4) 100%);
+    border-bottom: 1px solid rgba(232, 179, 96, 0.55);
+    z-index: 2;
+    pointer-events: none;
   }
-
-  /* sections */
-  section.block { padding:60px 0; }
-  @media (min-width:720px) { section.block { padding:80px 0; } }
-  .section-head { margin-bottom:32px; }
-  .section-head .eyebrow { margin-bottom:16px; }
-  .section-head h2 { font-size:clamp(30px, 4.4vw, 48px); max-width:22ch; }
-  .section-head p { color:var(--mist); max-width:60ch; font-size:16px; }
-
-  /* triptych */
-  .triptych { display:grid; grid-template-columns:1fr; gap:16px; }
-  @media (min-width:760px) { .triptych { grid-template-columns:repeat(3, 1fr); gap:18px; } }
-  .card {
-    background:linear-gradient(180deg, var(--surface), var(--ocean-2));
-    border:1px solid var(--line); border-radius:var(--r-lg);
-    padding:26px 22px; position:relative;
-    transition:transform .25s, border-color .25s;
+  /* fine HUD scan grid */
+  .ocean-grid {
+    position: absolute; inset: 14px 0 0 0;
+    background-image:
+      linear-gradient(rgba(126, 184, 212, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(126, 184, 212, 0.045) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, #000 30%, transparent 100%);
   }
-  .card:hover { transform:translateY(-3px); border-color:var(--line-strong); }
-  .card .num {
-    position:absolute; top:18px; right:22px;
-    font-family:'Fraunces', serif; font-variation-settings:"SOFT" 100;
-    font-weight:700; font-size:36px;
-    color:rgba(255,255,255,.10); letter-spacing:-.04em;
+  /* slow-pulsing caustic surface ripples projected onto upper water */
+  .ocean-caustic {
+    position: absolute;
+    top: 14px; left: 0; right: 0;
+    height: 50%;
+    pointer-events: none;
+    background:
+      repeating-radial-gradient(circle at 20% 0%, rgba(232,179,96,0.10) 0 1px, transparent 2px 50px),
+      repeating-radial-gradient(circle at 60% -10%, rgba(232,179,96,0.08) 0 1px, transparent 2px 70px),
+      repeating-radial-gradient(circle at 85% 0%, rgba(232,179,96,0.09) 0 1px, transparent 2px 60px);
+    mix-blend-mode: screen;
+    animation: causticDrift 18s ease-in-out infinite alternate;
+    opacity: 0.85;
   }
-  .card h3 { font-size:22px; margin-bottom:8px; color:var(--cream); }
-  .card p { color:var(--mist); font-size:15px; margin:0; }
-  .card.kelp h3 { color:var(--kelp); }
-  .card.coral h3 { color:var(--coral); }
-  .card.aqua h3 { color:var(--aqua); }
-
-  /* kit components */
-  .components-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; }
-  @media (min-width:760px) { .components-grid { grid-template-columns:repeat(5, 1fr); gap:16px; } }
-  .component {
-    background:linear-gradient(180deg, var(--surface), var(--ocean-2));
-    border:1px solid var(--line); border-radius:var(--r-lg);
-    padding:18px 16px; text-align:center;
-    transition:transform .2s, border-color .2s;
+  @keyframes causticDrift {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(-30px, 0, 0) scale(1.05); }
   }
-  .component:hover { transform:translateY(-3px); border-color:var(--line-strong); }
-  .component .pic {
-    aspect-ratio:1/1; margin-bottom:12px;
-    display:grid; place-items:center;
-    background:rgba(255,255,255,.03); border-radius:var(--r-md);
-    font-size:48px;
+  /* HUD reticle frames at the four corners */
+  .ocean-reticle {
+    position: absolute; pointer-events: none; z-index: 6;
+    width: 22px; height: 22px;
+    border: 1px solid var(--phos-dim);
+    opacity: 0.55;
   }
-  .component h4 { font-size:15px; margin:0 0 4px; color:var(--cream); line-height:1.2; }
-  .component p { margin:0; color:var(--mist); font-size:13px; }
-
-  /* phase blocks */
-  .phases { display:grid; grid-template-columns:1fr; gap:18px; }
-  .phase {
-    background:linear-gradient(180deg, #0c2c4d, #08213c);
-    border:1px solid var(--line); border-radius:var(--r-lg);
-    padding:26px 22px;
+  .ocean-reticle.tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+  .ocean-reticle.tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+  .ocean-reticle.bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+  .ocean-reticle.br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+  .ocean-crosshair {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px; height: 60px;
+    pointer-events: none; z-index: 5;
+    opacity: 0.18;
   }
-  @media (min-width:720px) { .phase { padding:32px 32px; } }
-  .phase-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:14px; margin-bottom:14px; }
-  .phase-num {
-    font-family:'Fraunces', serif; font-variation-settings:"SOFT" 100;
-    font-size:32px; font-weight:800;
-    color:var(--cream); letter-spacing:-.02em; line-height:1;
+  .ocean-crosshair::before, .ocean-crosshair::after {
+    content: ""; position: absolute; background: var(--phos);
   }
-  .phase-num em {
-    font-style:normal; color:var(--aqua); font-size:12px;
-    letter-spacing:.14em; text-transform:uppercase; margin-right:6px;
+  .ocean-crosshair::before { left: 50%; top: 0; bottom: 0; width: 1px; transform: translateX(-0.5px); }
+  .ocean-crosshair::after  { top: 50%; left: 0; right: 0; height: 1px; transform: translateY(-0.5px); }
+  /* sonar sweep */
+  .ocean-sonar {
+    position: absolute;
+    left: -10%; top: -10%;
+    width: 120%; height: 120%;
+    pointer-events: none;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      transparent 48%,
+      rgba(232,169,72,0.08) 50%,
+      transparent 52%,
+      transparent 100%);
+    animation: sonarSweep 14s linear infinite;
+    mix-blend-mode: screen;
+    opacity: 0.6;
   }
-  .phase-time {
-    font-family:'Caveat', cursive; font-weight:700;
-    color:var(--sun); font-size:20px;
+  @keyframes sonarSweep {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
-  .phase h3 { font-size:clamp(24px, 3.4vw, 32px); margin-bottom:10px; }
-  .phase p { color:var(--mist); font-size:15.5px; margin-bottom:8px; max-width:62ch; }
-  .phase ul { color:var(--mist); padding-left:22px; line-height:1.7; max-width:62ch; }
-  .phase ul li::marker { color:var(--aqua); }
-
-  /* WIP placeholder block */
-  .wip {
-    margin-top:18px;
-    background:repeating-linear-gradient(45deg, rgba(255,209,102,.06) 0 14px, rgba(255,209,102,.10) 14px 28px);
-    border:2px dashed rgba(255,209,102,.35);
-    border-radius:var(--r-md);
-    padding:32px 24px;
-    text-align:center;
+  .ocean-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ocean-overlay {
+    position: absolute;
+    top: 12px; left: 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 5;
   }
-  .wip-tag {
-    display:inline-block;
-    background:var(--sun); color:var(--abyss);
-    padding:4px 10px; border-radius:6px;
-    font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
-    margin-bottom:14px;
+  .ocean-overlay strong { color: var(--phos); font-weight: 500; }
+  .ocean-corner {
+    position: absolute;
+    bottom: 10px; right: 14px;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--mute);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 5;
+    text-align: right;
+    line-height: 1.5;
   }
-  .wip h4 {
-    font-family:'Fraunces', serif; font-variation-settings:"SOFT" 100;
-    font-size:22px; color:var(--cream); margin-bottom:8px;
+  .ocean-corner span { color: var(--dim); }
+  /* depth ruler labels */
+  .ocean-depth {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 38px;
+    pointer-events: none;
+    z-index: 4;
   }
-  .wip p { color:var(--mist); font-size:14.5px; margin:0; max-width:50ch; margin:0 auto; }
-
-  /* science */
-  .science-grid { display:grid; grid-template-columns:1fr; gap:22px; margin-top:24px; }
-  @media (min-width:880px) { .science-grid { grid-template-columns:1fr 1fr; gap:30px; align-items:center; } }
-  .science-art {
-    background:linear-gradient(160deg, #0e3658, #061b2e);
-    border:1px solid var(--line); border-radius:var(--r-xl);
-    padding:28px; aspect-ratio:1/1;
-    display:flex; align-items:center; justify-content:center;
-    font-size:80px;
-    flex-direction:column; gap:14px;
-  }
-  .science-art .lvl {
-    display:flex; align-items:center; justify-content:space-between;
-    width:100%;
-    padding:8px 14px; border-radius:var(--r-md);
-    background:rgba(255,255,255,.04);
-    font-size:14px;
-    font-family:'Plus Jakarta Sans', sans-serif;
-  }
-  .science-art .lvl span:first-child {
-    font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--mist); font-weight:700;
-  }
-  .science-art .lvl span:last-child { font-family:'Caveat', cursive; font-size:18px; }
-  .science-text h3 { font-size:26px; margin-bottom:14px; }
-  .science-text p { color:var(--mist); font-size:16px; }
-  .science-text .term { color:var(--aqua); font-weight:700; border-bottom:1px dashed rgba(95,224,214,.5); }
-  .ngss-tag {
-    display:inline-block; margin-top:8px;
-    padding:4px 10px;
-    background:rgba(116,195,101,.16);
-    border:1px solid rgba(116,195,101,.35);
-    color:var(--kelp); border-radius:6px;
-    font-size:11.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+  .ocean-depth div {
+    position: absolute;
+    left: 6px;
+    font-family: var(--mono);
+    font-size: 8.5px;
+    color: var(--mute);
+    letter-spacing: .14em;
   }
 
-  /* extensions */
-  .ext-grid { display:grid; grid-template-columns:1fr; gap:14px; }
-  @media (min-width:720px) { .ext-grid { grid-template-columns:1fr 1fr; gap:16px; } }
-  @media (min-width:1000px) { .ext-grid { grid-template-columns:repeat(3, 1fr); } }
-  .ext {
-    background:linear-gradient(180deg, var(--surface), var(--ocean-2));
-    border:1px solid var(--line); border-radius:var(--r-lg);
-    padding:22px;
-    transition:transform .2s, border-color .2s;
+  .organism { transition: opacity .3s ease; }
+  .organism .body { transform-box: fill-box; transform-origin: center; }
+  .organism-label {
+    fill: var(--dim);
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: .12em;
+    opacity: .55;
   }
-  .ext:hover { transform:translateY(-3px); border-color:var(--line-strong); }
-  .ext .ico { font-size:28px; margin-bottom:8px; }
-  .ext h4 { font-size:18px; margin-bottom:4px; }
-  .ext p { color:var(--mist); font-size:14.5px; margin:0; }
 
-  /* credits */
-  .credits {
-    border-top:1px solid var(--line);
-    padding:50px 0 30px; margin-top:40px;
+  /* MAIN GRAPH (now primary view, paired with ocean) */
+  .main-graph {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    padding: 16px 18px 10px;
   }
-  .credits-grid { display:grid; grid-template-columns:1fr; gap:30px; }
-  @media (min-width:760px) { .credits-grid { grid-template-columns:1.3fr 1fr 1fr; gap:40px; } }
-  .credits h4 {
-    font-family:'Plus Jakarta Sans', sans-serif;
-    font-size:12px; letter-spacing:.18em; text-transform:uppercase;
-    color:var(--mist); font-weight:700; margin-bottom:14px;
+  .main-graph .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
   }
-  .credits p { color:var(--mist); font-size:14.5px; }
-  .credits .team {
-    color:var(--cream);
-    font-family:'Fraunces', serif; font-variation-settings:"SOFT" 100;
-    font-size:24px; font-weight:700; letter-spacing:-.01em;
-    margin-bottom:6px;
+  .main-graph .head h4 {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 500;
   }
-  .credits ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
-  .credits ul a {
-    color:var(--cream);
-    border-bottom:1px solid var(--line-strong); padding-bottom:2px;
+  .main-graph .head h4 strong { color: var(--phos); }
+  .main-graph .head .span {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--mute);
+    letter-spacing: .14em;
+    text-transform: uppercase;
   }
-  .credits ul a:hover { color:var(--aqua); border-color:var(--aqua); text-decoration:none; }
-  .credits ul .wip-link {
-    color:var(--mute); font-style:italic; pointer-events:none;
-    border-color:transparent;
+
+  .graph-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 280px;
+    background:
+      linear-gradient(rgba(232, 169, 72, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232, 169, 72, 0.025) 1px, transparent 1px);
+    background-size: 60px 25%;
+    border: 1px solid var(--line-2);
   }
-  .credits ul .wip-link::after { content:" — coming soon"; color:var(--sun); font-style:normal; }
+  .graph-wrap svg { display: block; width: 100%; height: 100%; }
+  .graph-axis {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    font-family: var(--mono);
+    font-size: 8.5px;
+    color: var(--mute);
+    letter-spacing: .12em;
+  }
+  .graph-axis .y-top    { position: absolute; top: 4px; left: 6px; }
+  .graph-axis .y-mid    { position: absolute; top: 50%; left: 6px; transform: translateY(-50%); }
+  .graph-axis .y-bottom { position: absolute; bottom: 4px; left: 6px; }
+  .graph-axis .x-left   { position: absolute; bottom: 4px; left: 36px; }
+  .graph-axis .x-right  { position: absolute; bottom: 4px; right: 6px; }
+
+  /* legend doubles as readout under the graph */
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px 14px;
+    margin-top: 10px;
+    font-size: 10.5px;
+  }
+  .legend-row {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--dim);
+    padding: 3px 0;
+    border-bottom: 1px dotted transparent;
+  }
+  .legend-row .swatch {
+    width: 12px; height: 2px;
+    flex-shrink: 0;
+  }
+  .legend-row .name {
+    color: var(--txt);
+    font-size: 10px;
+    letter-spacing: .04em;
+  }
+  .legend-row .val {
+    margin-left: auto;
+    color: var(--phos);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ===== BAR ROW: replaces token dots — compact species census ===== */
+  .barrow {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    border-bottom: 1px solid var(--line-2);
+    background: var(--bg-soft);
+  }
+  .bar-cell {
+    padding: 12px 12px 10px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .bar-cell:last-child { border-right: 0; }
+  .bar-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .bar-name {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 500;
+  }
+  .bar-name .star { color: var(--phos); }
+  .bar-val {
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--txt);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .bar-track {
+    position: relative;
+    height: 6px;
+    background: var(--void);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .bar-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: var(--txt);
+    transition: width .6s ease, background .3s ease;
+  }
+  .bar-eq {
+    position: absolute;
+    top: -2px; bottom: -2px;
+    width: 1px;
+    background: var(--phos-dim);
+  }
+  .bar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: .12em;
+    color: var(--mute);
+    text-transform: uppercase;
+  }
+  .bar-meta .delta.up { color: var(--alert); }
+  .bar-meta .delta.dn { color: var(--safe); }
+
+  /* health gauge row */
+  .health-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--line-2);
+    background: var(--bg);
+    padding: 14px 18px 12px;
+  }
+  .health-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .health-head .l {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--dim); font-weight: 500;
+  }
+  .health-head .l strong { color: var(--phos); }
+  .health-head .v {
+    font-family: var(--mono); font-size: 22px;
+    color: var(--phos); font-weight: 500;
+    font-variant-numeric: tabular-nums; line-height: 1;
+    /* CRT odometer container — overflow hidden so digits roll behind a phosphor mask */
+    display: inline-flex;
+    height: 22px;
+    overflow: hidden;
+    text-shadow: 0 0 6px var(--phos-dim), 0 0 14px rgba(232,169,72,0.18);
+    position: relative;
+  }
+  /* per-digit reel: a vertical column of 0..9 that translates to land on the target digit */
+  .health-head .v .reel {
+    display: inline-flex;
+    flex-direction: column;
+    height: 22px;
+    line-height: 22px;
+    transition: transform .55s cubic-bezier(.34, .12, .24, 1);
+    will-change: transform;
+  }
+  .health-head .v .reel > span {
+    height: 22px;
+    line-height: 22px;
+    display: block;
+    text-align: center;
+    min-width: 0.62em;
+  }
+  /* faint phosphor scanline trace inside the readout — same bg as body but tighter */
+  .health-head .v::after {
+    content: ""; position: absolute; inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,0.18) 2px 3px);
+    mix-blend-mode: multiply;
+    opacity: .55;
+  }
+  /* brief flash applied via JS when the value changes */
+  .health-head .v.flicker { animation: healthFlicker .28s steps(2) 1; }
+  @keyframes healthFlicker {
+    0%   { filter: brightness(1.6) contrast(1.05); }
+    50%  { filter: brightness(0.85); }
+    100% { filter: none; }
+  }
+  .health-head .v.warn { color: #d4a548; }
+  .health-head .v.bad  { color: var(--alert); animation: pulseAlert 1s steps(1) infinite; }
+  @keyframes pulseAlert { 50% { opacity: .55; } }
+  .health-bar {
+    position: relative; height: 8px;
+    background: var(--void); border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .health-bar .fill {
+    position: absolute; top: 0; bottom: 0; left: 0;
+    background: linear-gradient(90deg, var(--alert) 0%, #d4a548 50%, var(--safe) 100%);
+    transition: width .6s ease;
+  }
+  .health-bar .marker {
+    position: absolute; top: -2px; bottom: -2px;
+    width: 1px; background: rgba(212,208,192,0.4);
+  }
+  .health-tag {
+    margin-top: 6px;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--dim); letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .health-tag.warn { color: #d4a548; }
+  .health-tag.bad { color: var(--alert); }
+  .health-tag.good { color: var(--safe); }
+
+  /* ============ FOOD WEB / VIEW.C ============ */
+  .foodweb {
+    position: relative;
+    overflow: visible;
+    border-bottom: 1px solid var(--line-2);
+    background:
+      repeating-linear-gradient(0deg, transparent 0 3px, rgba(124, 168, 192, 0.025) 3px 4px),
+      linear-gradient(180deg, rgba(124, 168, 192, 0.04), rgba(10, 10, 13, 0));
+    padding: 14px 18px 18px;
+    overflow: hidden;
+  }
+  .foodweb .head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .foodweb .head h4 {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--dim); font-weight: 500; margin: 0;
+  }
+  .foodweb .head h4 strong { color: var(--phos); }
+  .foodweb .head .span {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--dim);
+  }
+  .fw-stage {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    padding-right: 64px;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+  /* right-side gutter for tier labels — TNO-style schematic legend */
+  .fw-gutter {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 60px;
+    border-left: 1px dashed rgba(124, 168, 192, 0.18);
+    pointer-events: none;
+  }
+  .fw-gutter .glbl {
+    position: absolute;
+    right: 6px;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: rgba(124, 168, 192, 0.6);
+    text-align: right;
+    line-height: 1.15;
+  }
+  .fw-gutter .glbl .tk {
+    color: rgba(124, 168, 192, 0.85);
+    font-weight: 500;
+  }
+  .fw-gutter .gtick {
+    position: absolute;
+    left: -3px;
+    width: 6px; height: 1px;
+    background: rgba(124, 168, 192, 0.6);
+    transform: translateY(-50%);
+  }
+  .fw-stage svg { display: block; width: 100%; height: 100%; }
+  .fw-tier {
+    position: absolute; left: 0; right: 60px;
+    border-top: 1px dashed rgba(124, 168, 192, 0.10);
+    pointer-events: none;
+  }
+  /* old left-side label hidden — labels now live in .fw-gutter */
+  .fw-tier .lbl { display: none; }
+
+  /* GHOST NODE — extirpated species memorial (otter) */
+  .fw-node.ghost {
+    border-style: dashed;
+    border-color: rgba(124, 168, 192, 0.35);
+    background: rgba(10, 10, 13, 0.55);
+    width: 92px;
+    padding: 5px 6px 4px;
+    cursor: pointer;
+    opacity: 0.72;
+    transition: opacity .2s, border-color .2s, background .2s;
+  }
+  .fw-node.ghost:hover { opacity: 1; border-color: rgba(232, 169, 72, 0.6); background: rgba(20, 16, 8, 0.85); }
+  .fw-node.ghost .silhouette {
+    height: 44px;
+    background:
+      repeating-linear-gradient(135deg, rgba(232, 169, 72, 0.05) 0 3px, transparent 3px 6px),
+      radial-gradient(ellipse at center, rgba(232, 169, 72, 0.10), rgba(10,10,13,0.92));
+  }
+  .fw-node.ghost .silhouette svg { height: 36px; opacity: 1; }
+  .fw-node.ghost .common {
+    font-size: 12px;
+    color: rgba(212, 208, 192, 0.55);
+  }
+  .fw-node.ghost .common::before {
+    content: '† ';
+    color: rgba(232, 169, 72, 0.7);
+  }
+  .fw-node.ghost .latin { font-size: 7.5px; }
+  .fw-node.ghost .meta .tier { color: rgba(232, 169, 72, 0.7); letter-spacing: .14em; }
+  .fw-node.ghost .meta .pop { color: rgba(212, 208, 192, 0.4); }
+  .fw-node.ghost::before, .fw-node.ghost::after,
+  .fw-node.ghost > .cb1, .fw-node.ghost > .cb2 {
+    background: rgba(232, 169, 72, 0.55);
+  }
+
+  /* Otter info popup — drops BELOW the ghost node so it never overflows
+     the top of the food-web stage. Caret points up. */
+  .otter-pop {
+    position: absolute;
+    z-index: 10;
+    width: 240px;
+    border: 1px solid rgba(232, 169, 72, 0.6);
+    background: rgba(10, 10, 13, 0.97);
+    padding: 10px 12px 11px;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--txt);
+    box-shadow: 0 0 0 1px rgba(124, 168, 192, 0.08);
+    transform: translate(-50%, 50px);
+  }
+  .otter-pop strong {
+    display: block;
+    color: rgba(232, 169, 72, 0.9);
+    font-size: 9.5px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .otter-pop .body {
+    color: var(--dim);
+    font-size: 10.5px;
+  }
+  .otter-pop .body em {
+    color: var(--txt);
+    font-style: normal;
+  }
+  .otter-pop::after {
+    content: '';
+    position: absolute;
+    top: -6px; left: 50%;
+    width: 10px; height: 10px;
+    border-left: 1px solid rgba(232, 169, 72, 0.6);
+    border-top: 1px solid rgba(232, 169, 72, 0.6);
+    background: rgba(10, 10, 13, 0.97);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .fw-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 110px;
+    border: 1px solid rgba(124, 168, 192, 0.35);
+    background: rgba(10, 10, 13, 0.92);
+    padding: 6px 7px 5px;
+    box-shadow:
+      inset 0 0 0 1px rgba(10, 10, 13, 0.6),
+      0 0 0 1px rgba(124, 168, 192, 0.08);
+    transition: opacity .25s, border-color .25s;
+  }
+  /* TNO-style corner rivets */
+  .fw-node::before, .fw-node::after,
+  .fw-node > .cb1, .fw-node > .cb2 {
+    content: '';
+    position: absolute;
+    width: 3px; height: 3px;
+    background: rgba(124, 168, 192, 0.55);
+  }
+  .fw-node::before { top: -1px; left: -1px; }
+  .fw-node::after  { top: -1px; right: -1px; }
+  .fw-node > .cb1  { bottom: -1px; left: -1px; }
+  .fw-node > .cb2  { bottom: -1px; right: -1px; }
+
+  .fw-node .silhouette {
+    width: 100%;
+    height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px;
+    background:
+      repeating-linear-gradient(0deg, rgba(212, 208, 192, 0.04) 0 1px, transparent 1px 3px),
+      radial-gradient(ellipse at center, rgba(212, 208, 192, 0.05), rgba(10,10,13,0.95));
+    border-bottom: 1px solid rgba(124, 168, 192, 0.18);
+    position: relative;
+    overflow: hidden;
+  }
+  .fw-node .silhouette::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(10,10,13,0.6) 100%);
+    pointer-events: none;
+  }
+  .fw-node .silhouette svg { width: auto; height: 30px; display: block; }
+  .fw-node .common {
+    font-family: 'VT323', 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--phos);
+    line-height: 1;
+    margin-bottom: 1px;
+  }
+  .fw-node .latin {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    font-size: 8px;
+    letter-spacing: .02em;
+    color: var(--dim);
+    line-height: 1.1;
+    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fw-node .meta {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 8.5px;
+    letter-spacing: .12em; color: var(--dim);
+    border-top: 1px solid rgba(124, 168, 192, 0.18);
+    padding-top: 3px;
+  }
+  .fw-node .meta .pop {
+    color: var(--txt); font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .fw-node .meta .tier {
+    color: rgba(124, 168, 192, 0.7);
+  }
+  .fw-node.keystone .common::after {
+    content: ' ★';
+    color: #e8a948;
+  }
+  .fw-node.dim { opacity: 0.25; }
+  .fw-node.collapse { border-color: var(--alert); animation: fwAlert 0.8s steps(1) infinite; }
+  @keyframes fwAlert { 50% { border-color: rgba(212, 76, 64, 0.3); } }
+
+  /* status line */
+  .status-row {
+    border-bottom: 1px solid var(--line-2);
+    padding: 12px 18px;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .status-row .lbl {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 500;
+  }
+  .status-line {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--txt);
+    line-height: 1.4;
+    flex: 1;
+  }
+  .status-line.ok { color: var(--phos); }
+  .status-line.alert { color: var(--alert); }
+  .status-line.partial { color: var(--phos); }
+  .status-line.fixed { color: var(--safe); }
+  .status-line::before {
+    content: "› ";
+    opacity: .8;
+  }
+
+  /* CONSOLE / control deck */
+  .console {
+    border-top: 1px solid var(--line-2);
+    padding: 16px;
+    background: var(--bg);
+  }
+  @media (min-width: 720px) { .console { padding: 18px 22px; } }
+
+  .console h5 {
+    margin: 0 0 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 500;
+  }
+  .console h5 strong { color: var(--phos); font-weight: 500; }
+
+  .row-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .ec-btn {
+    appearance: none;
+    border: 1px solid var(--line-2);
+    background: var(--bg-soft);
+    color: var(--txt);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 400;
+    text-align: left;
+    padding: 10px 12px;
+    cursor: pointer;
+    line-height: 1.35;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 64px;
+    transition: border-color .12s ease, background .12s ease;
+  }
+  .ec-btn .lbl {
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 500;
+  }
+  .ec-btn:hover:not(:disabled) {
+    border-color: var(--phos);
+    color: var(--phos);
+  }
+  .ec-btn:hover:not(:disabled) .lbl { color: var(--phos); }
+  .ec-btn:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+  }
+  .ec-btn.uhoh.active {
+    border-color: var(--alert);
+    background: var(--alert-bg);
+    color: var(--alert);
+  }
+  .ec-btn.uhoh.active .lbl { color: var(--alert); }
+  .ec-btn.fix.active {
+    border-color: var(--safe);
+    background: var(--safe-bg);
+    color: var(--safe);
+  }
+  .ec-btn.fix.active .lbl { color: var(--safe); }
+
+  .console-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line-2);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .console-foot strong { color: var(--txt); font-weight: 500; }
+
+  .reset-btn {
+    appearance: none;
+    border: 1px solid var(--line-2);
+    background: transparent;
+    color: var(--dim);
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .reset-btn:hover { color: var(--txt); border-color: var(--txt); }
+
+  /* play/pause indicator */
+  .tick-indicator {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .tick-indicator .dot {
+    width: 6px; height: 6px;
+    background: var(--phos);
+    box-shadow: 0 0 4px var(--phos);
+    animation: blink 1s steps(1) infinite;
+  }
+
+  /* ========================================================
+     DOCS (compact)
+     ======================================================== */
+  .docs {
+    padding: 50px 0 30px;
+    border-top: 1px solid var(--line-2);
+  }
+  @media (min-width: 720px) { .docs { padding: 70px 0 40px; } }
+  .docs-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  @media (min-width: 720px) {
+    .docs-grid {
+      grid-template-columns: 200px 1fr;
+      gap: 40px;
+    }
+  }
+  .docs-side {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .docs-side strong { color: var(--phos); display: block; margin-bottom: 4px; }
+
+  .docs-content h2 {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--txt);
+    margin: 0 0 18px;
+    letter-spacing: -.01em;
+  }
+  .docs-content > p, .docs-content > .body p {
+    font-family: var(--serif);
+    font-size: 15.5px;
+    line-height: 1.65;
+    color: var(--txt);
+    max-width: 64ch;
+    margin: 0 0 14px;
+  }
+  .docs-content em { font-style: italic; color: var(--phos); }
+  .docs-content strong { color: var(--txt); font-weight: 500; }
+
+  .phase-table {
+    width: 100%;
+    border-top: 1px solid var(--line-2);
+    margin: 24px 0 8px;
+  }
+  .phase-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 18px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .phase-row .num {
+    font-family: var(--mono);
+    color: var(--phos);
+    font-size: 12px;
+    letter-spacing: .12em;
+    font-weight: 500;
+  }
+  .phase-row .time {
+    font-family: var(--mono);
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    grid-column: 2; grid-row: 1;
+  }
+  @media (min-width: 600px) {
+    .phase-row .time { grid-column: auto; grid-row: auto; }
+  }
+  .phase-row .desc {
+    grid-column: 2; grid-row: 2;
+    font-family: var(--serif);
+    font-size: 15px;
+    color: var(--txt);
+    line-height: 1.55;
+  }
+  @media (min-width: 600px) {
+    .phase-row .desc { grid-column: 3; grid-row: auto; }
+  }
+  .phase-row .desc strong { color: var(--phos); font-weight: 500; }
+
+  .ngss-block {
+    margin-top: 22px;
+    padding: 14px 16px;
+    border: 1px solid var(--line-2);
+    background: var(--phos-bg);
+    font-size: 12.5px;
+    color: var(--txt);
+    line-height: 1.55;
+  }
+  .ngss-block strong {
+    display: block;
+    color: var(--phos);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .ngss-block .body { font-family: var(--serif); }
+
+  /* ========================================================
+     FILES / CREDITS
+     ======================================================== */
+  .files {
+    padding: 50px 0 30px;
+    border-top: 1px solid var(--line-2);
+  }
+  .files-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  @media (min-width: 720px) {
+    .files-grid { grid-template-columns: 1.5fr 1fr; gap: 48px; }
+  }
+  .files-grid h4 {
+    margin: 0 0 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--phos);
+    font-weight: 500;
+  }
+  .files-grid p {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--dim);
+    margin: 0 0 6px;
+    line-height: 1.55;
+  }
+  .files-grid p.lead {
+    color: var(--txt);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .files-grid ul {
+    list-style: none;
+    padding: 0; margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .files-grid li {
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  .files-grid li.pending {
+    color: var(--mute);
+  }
+  .files-grid li.pending::after {
+    content: " // pending";
+    color: var(--phos-dim);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
 
   .footer {
-    padding:24px 0 50px;
-    color:var(--mute);
-    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
-    text-align:center;
+    padding: 24px 0 50px;
+    border-top: 1px solid var(--line);
+    color: var(--mute);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
   }
-  .footer span { color:var(--mist); }
+  .footer .row {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .footer .right { color: var(--dim); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+  }
 </style>
 </head>
 <body>
 
-<div class="wip-banner">
-  <strong>🚧 Skeleton draft</strong> · Layout &amp; copy ready for team review · Interactive food web simulator and final assets coming next
+<!-- ============== TOPBAR ============== -->
+<div class="topbar">
+  <div class="container">
+    <div class="row">
+      <span class="id">USC Viterbi // ATLAS — Kelp Forest Module</span>
+      <span class="meta">
+        <span>module <span>01</span></span>
+        <span>grade <span>8</span></span>
+        <span>build <span id="buildHash">04.29.26</span></span>
+        <span class="compiled-meta">compiled in <span id="compiledMs">1.3</span>s</span>
+      </span>
+    </div>
+  </div>
 </div>
 
-<header class="topstrip">
-  <span class="mark"><span class="dot"></span>Tangled Tides</span>
-  <span class="partners">
-    <span>USC Viterbi · ATLAS</span>
-    <span>AltaSea</span>
-    <span>The Accelerated School</span>
-  </span>
-</header>
+<!-- ============== TITLE BLOCK ============== -->
+<div class="container">
+  <section class="titleblock">
+    <div class="doc-id">ATLAS <strong>// Kelp Forest Module</strong> — Spring 2026 working build</div>
+    <h1>Kelp forest food web <span class="lo">— a classroom simulator</span><span class="crt-caret" aria-hidden="true"></span></h1>
+    <p class="abstract">
+      A 30–45 minute classroom kit and accompanying simulator for 8th-grade ecology, developed for USC Viterbi's <em>ATLAS</em> outreach program. Students build a Catalina-coast food web, perturb it with disruption events, and try to recover it through intervention strategies. The terminal below runs a simplified <em>Lotka–Volterra</em> model of the same six species, so anyone visiting this page can see the cascade unfold in real time.
+    </p>
+  </section>
+</div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-grid">
+<!-- ============== SIMULATOR ============== -->
+<div class="container">
+  <section class="terminal" id="terminal">
+    <div class="term-header">
+      <div class="left">
+        <div class="lights"><span class="on"></span><span class="on"></span><span></span></div>
+        <strong>CATALINA</strong>
+        <span>// nearshore kelp forest</span>
+      </div>
+      <div class="right">
+        <span class="tick-indicator"><span class="dot"></span><span id="tickDisplay">T+ 000s</span></span>
+      </div>
+    </div>
+
+    <!-- VIEW.C: TROPHIC NETWORK / FOOD WEB -->
+    <div class="foodweb">
+      <div class="head">
+        <h4><strong>FOOD WEB</strong> // who eats whom</h4>
+        <span class="span">6 species · live model</span>
+      </div>
+      <div class="fw-stage" id="fwStage">
+        <svg id="fwSvg" viewBox="0 0 800 380" preserveAspectRatio="none"></svg>
+      </div>
+    </div>
+
+    <!-- TOP STAGE: ocean cross-section + live curve graph -->
+    <div class="stage">
+      <!-- OCEAN: live water-column cross-section, agents spawn / move / decay into particles -->
+      <div class="ocean">
+        <div class="ocean-grid"></div>
+        <div class="ocean-caustic"></div>
+        <div class="ocean-sonar"></div>
+        <div class="ocean-reticle tl"></div>
+        <div class="ocean-reticle tr"></div>
+        <div class="ocean-reticle bl"></div>
+        <div class="ocean-reticle br"></div>
+        <div class="ocean-crosshair"></div>
+        <div class="ocean-overlay"><strong>OCEAN</strong> // live cross-section</div>
+        <div class="ocean-corner">
+          Catalina nearshore<br>
+          <span>kelp forest, 0–20m depth</span>
+        </div>
+        <div class="ocean-depth">
+          <div style="top: 4%">0m</div>
+          <div style="top: 28%">−6m</div>
+          <div style="top: 52%">−12m</div>
+          <div style="top: 76%">−18m</div>
+          <div style="bottom: 6px">−24m</div>
+        </div>
+        <svg class="ocean-svg" id="oceanSvg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="lightShaft" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#e8a948" stop-opacity="0.10"/>
+              <stop offset="0.4" stop-color="#e8a948" stop-opacity="0.04"/>
+              <stop offset="1" stop-color="#e8a948" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="depthFog" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#03050a" stop-opacity="0"/>
+              <stop offset="1" stop-color="#03050a" stop-opacity="0.55"/>
+            </linearGradient>
+            <linearGradient id="kelpFrond" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#a8d6b8" stop-opacity="0.7"/>
+              <stop offset="1" stop-color="#5a9070" stop-opacity="0.85"/>
+            </linearGradient>
+            <radialGradient id="agentGlow" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="currentColor" stop-opacity="0.35"/>
+              <stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="0.8"/>
+            </filter>
+          </defs>
+
+          <!-- volumetric light shafts from surface (more, varied widths) -->
+          <polygon points="100,0 60,600 180,600 220,0" fill="url(#lightShaft)"/>
+          <polygon points="290,0 270,600 340,600 360,0" fill="url(#lightShaft)" opacity="0.7"/>
+          <polygon points="460,0 430,600 510,600 540,0" fill="url(#lightShaft)"/>
+          <polygon points="600,0 590,600 640,600 650,0" fill="url(#lightShaft)" opacity="0.6"/>
+          <polygon points="710,0 680,600 770,600 790,0" fill="url(#lightShaft)"/>
+
+          <!-- surface waves (multi-line, animated via SVG) -->
+          <path id="surfaceWave1" d="M 0 8 Q 80 4, 160 8 T 320 8 T 480 8 T 640 8 T 800 8"
+                stroke="rgba(232,169,72,0.45)" stroke-width="0.7" fill="none"/>
+          <path id="surfaceWave2" d="M 0 14 Q 100 10, 200 14 T 400 14 T 600 14 T 800 14"
+                stroke="rgba(232,169,72,0.18)" stroke-width="0.5" fill="none"/>
+
+          <!-- thermocline marker -->
+          <line x1="0" y1="225" x2="800" y2="225" stroke="rgba(126,184,212,0.18)" stroke-width="0.5" stroke-dasharray="1 8"/>
+          <text x="14" y="220" fill="rgba(126,184,212,0.45)" font-family="IBM Plex Mono,monospace" font-size="7" letter-spacing="0.18em">THERMOCLINE  ~14°C</text>
+
+          <!-- depth fog overlay (darkens lower half) -->
+          <rect x="0" y="0" width="800" height="600" fill="url(#depthFog)" pointer-events="none"/>
+
+          <!-- background marine snow layer (slow drifting particles) -->
+          <g id="oceanSnow"></g>
+
+          <!-- seafloor with rocky outcrops -->
+          <path d="M 0 565 L 30 558 L 65 562 L 100 555 Q 130 548, 160 552 L 200 558 Q 240 545, 280 552
+                   L 320 558 Q 360 548, 400 555 L 440 560 Q 490 548, 540 553 L 590 558
+                   Q 640 549, 700 555 L 760 558 L 800 562 L 800 600 L 0 600 Z"
+                fill="rgba(40,38,34,0.65)" stroke="rgba(212,208,192,0.22)" stroke-width="0.6"/>
+          <!-- a few rock silhouettes -->
+          <ellipse cx="120" cy="558" rx="22" ry="6" fill="rgba(70,65,58,0.55)"/>
+          <ellipse cx="380" cy="555" rx="34" ry="8" fill="rgba(70,65,58,0.55)"/>
+          <ellipse cx="640" cy="557" rx="26" ry="7" fill="rgba(70,65,58,0.5)"/>
+
+          <!-- kelp canopy backdrop — many faint background fronds for depth -->
+          <g id="kelpBackdrop" opacity="0.35"></g>
+
+          <!-- live agent layer -->
+          <g id="oceanAgents"></g>
+          <!-- particle layer (decay) -->
+          <g id="oceanParticles"></g>
+
+          <!-- vignette frame -->
+          <rect x="0" y="0" width="800" height="600" fill="none"
+                stroke="rgba(232,169,72,0.06)" stroke-width="40" pointer-events="none"/>
+        </svg>
+      </div>
+
+      <!-- MAIN GRAPH: now the dominant monitor -->
+      <div class="main-graph">
+        <div class="head">
+          <h4><strong>POPULATIONS</strong> // 60-second history</h4>
+          <span class="span">live</span>
+        </div>
+        <div class="graph-wrap">
+          <svg id="graphSvg" viewBox="0 0 600 280" preserveAspectRatio="none">
+            <polyline id="line-kelp"      fill="none" stroke="#88c4a0" stroke-width="1.6" points=""/>
+            <polyline id="line-urchin"    fill="none" stroke="#b48fd9" stroke-width="1.6" points=""/>
+            <polyline id="line-sheephead" fill="none" stroke="#e8a948" stroke-width="1.6" points=""/>
+            <polyline id="line-seabass"   fill="none" stroke="#7eb8d4" stroke-width="1.6" points=""/>
+            <polyline id="line-sealion"   fill="none" stroke="#d24c40" stroke-width="1.6" points=""/>
+            <polyline id="line-lobster"   fill="none" stroke="#d49070" stroke-width="1.6" points=""/>
+          </svg>
+          <div class="graph-axis">
+            <span class="y-top">MAX</span>
+            <span class="y-mid">½</span>
+            <span class="y-bottom">0</span>
+            <span class="x-right">NOW</span>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-row"><span class="swatch" style="background:#88c4a0"></span><span class="name">kelp</span><span class="val" id="leg-kelp">0</span></div>
+          <div class="legend-row"><span class="swatch" style="background:#b48fd9"></span><span class="name">urchin</span><span class="val" id="leg-urchin">0</span></div>
+          <div class="legend-row"><span class="swatch" style="background:#e8a948"></span><span class="name">sheephead★</span><span class="val" id="leg-sheephead">0</span></div>
+          <div class="legend-row"><span class="swatch" style="background:#7eb8d4"></span><span class="name">sea bass</span><span class="val" id="leg-seabass">0</span></div>
+          <div class="legend-row"><span class="swatch" style="background:#d24c40"></span><span class="name">sea lion</span><span class="val" id="leg-sealion">0</span></div>
+          <div class="legend-row"><span class="swatch" style="background:#d49070"></span><span class="name">lobster</span><span class="val" id="leg-lobster">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BAR ROW: replaces the dot tokens — six compact bars across -->
+    <div class="barrow" id="barrow">
+      <div class="bar-cell">
+        <div class="bar-head"><span class="bar-name">Kelp</span><span class="bar-val" id="val-kelp">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="fill-kelp" style="background:#88c4a0"></div><div class="bar-eq" id="eq-kelp"></div></div>
+        <div class="bar-meta"><span>L1 producer</span><span class="delta" id="delta-kelp">—</span></div>
+      </div>
+      <div class="bar-cell">
+        <div class="bar-head"><span class="bar-name">Urchin</span><span class="bar-val" id="val-urchin">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="fill-urchin" style="background:#b48fd9"></div><div class="bar-eq" id="eq-urchin"></div></div>
+        <div class="bar-meta"><span>L2 grazer</span><span class="delta" id="delta-urchin">—</span></div>
+      </div>
+      <div class="bar-cell">
+        <div class="bar-head"><span class="bar-name">Sheephead <span class="star">★</span></span><span class="bar-val" id="val-sheephead">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="fill-sheephead" style="background:#e8a948"></div><div class="bar-eq" id="eq-sheephead"></div></div>
+        <div class="bar-meta"><span>L3 keystone</span><span class="delta" id="delta-sheephead">—</span></div>
+      </div>
+      <div class="bar-cell">
+        <div class="bar-head"><span class="bar-name">Lobster</span><span class="bar-val" id="val-lobster">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="fill-lobster" style="background:#d49070"></div><div class="bar-eq" id="eq-lobster"></div></div>
+        <div class="bar-meta"><span>L2 scavenger</span><span class="delta" id="delta-lobster">—</span></div>
+      </div>
+      <div class="bar-cell">
+        <div class="bar-head"><span class="bar-name">Sea Bass</span><span class="bar-val" id="val-seabass">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="fill-seabass" style="background:#7eb8d4"></div><div class="bar-eq" id="eq-seabass"></div></div>
+        <div class="bar-meta"><span>L3 predator</span><span class="delta" id="delta-seabass">—</span></div>
+      </div>
+      <div class="bar-cell">
+        <div class="bar-head"><span class="bar-name">Sea Lion</span><span class="bar-val" id="val-sealion">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="fill-sealion" style="background:#d24c40"></div><div class="bar-eq" id="eq-sealion"></div></div>
+        <div class="bar-meta"><span>L4 apex</span><span class="delta" id="delta-sealion">—</span></div>
+      </div>
+    </div>
+
+    <!-- HEALTH gauge -->
+    <div class="health-row">
+      <div class="health-head">
+        <span class="l"><strong>FOREST HEALTH</strong></span>
+        <span class="v" id="healthVal" aria-label="forest health score"></span>
+      </div>
+      <div class="health-bar">
+        <div class="fill" id="healthFill" style="width:100%"></div>
+        <div class="marker" style="left:50%"></div>
+        <div class="marker" style="left:75%"></div>
+      </div>
+      <div class="health-tag good" id="healthTag">▲ Web stable. All trophic links functioning.</div>
+    </div>
+
+    <!-- STATUS line -->
+    <div class="status-row">
+      <span class="lbl">Status</span>
+      <div class="status-line ok" id="statusLine">System nominal. Populations within equilibrium ± 10%.</div>
+    </div>
+
+    <!-- CONSOLE: control deck -->
+    <div class="console">
+      <h5>Step <strong>// 01</strong> — apply disruption event</h5>
+      <div class="row-cards">
+        <button class="ec-btn uhoh" data-uhoh="urchin-spike">
+          <span class="lbl">Disruption 1</span>
+          Urchin population spike
+        </button>
+        <button class="ec-btn uhoh" data-uhoh="predator-loss">
+          <span class="lbl">Disruption 2</span>
+          Predator collapse
+        </button>
+        <button class="ec-btn uhoh" data-uhoh="warming">
+          <span class="lbl">Disruption 3</span>
+          Thermal anomaly
+        </button>
+      </div>
+
+      <h5>Step <strong>// 02</strong> — deploy intervention</h5>
+      <div class="row-cards">
+        <button class="ec-btn fix" data-fix="protect" disabled>
+          <span class="lbl">Intervention 1</span>
+          Predator protection
+        </button>
+        <button class="ec-btn fix" data-fix="farm" disabled>
+          <span class="lbl">Intervention 2</span>
+          Kelp farming
+        </button>
+        <button class="ec-btn fix" data-fix="pollution" disabled>
+          <span class="lbl">Intervention 3</span>
+          Reduce emissions
+        </button>
+      </div>
+
+      <div class="console-foot">
+        <span>Round <strong id="roundNum">01</strong> / 03</span>
+        <button class="reset-btn" id="resetSim">↺ Reset simulation</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============== DOCS ============== -->
+<div class="container">
+  <section class="docs">
+    <div class="docs-grid">
+      <aside class="docs-side">
+        <strong>§ A</strong>
+        Documentation<br>
+        Field protocol
+      </aside>
+      <div class="docs-content">
+        <h2>How a round runs.</h2>
+        <p>The physical kit mirrors what the simulator does. Students place organism cards on a board, draw arrows for predation, then play disruption and intervention cards in sequence. Most classrooms repeat the loop three times — same starting ecosystem, different perturbations each round.</p>
+
+        <div class="phase-table">
+          <div class="phase-row">
+            <span class="num">// 01</span>
+            <span class="desc"><strong>Build your ocean.</strong> Place every organism card on the board. Draw arrows for who eats whom. By the end the food web is visible at a glance.</span>
+          </div>
+          <div class="phase-row">
+            <span class="num">// 02</span>
+            <span class="desc"><strong>“Uh Oh” phase.</strong> Flip a disruption card and remove or boost the affected species. Watch the cascade play out in the simulator above.</span>
+          </div>
+          <div class="phase-row">
+            <span class="num">// 03</span>
+            <span class="desc"><strong>Fix It challenge.</strong> Pick an intervention. Some match the disruption; others don't. Discover which by trying.</span>
+          </div>
+          <div class="phase-row">
+            <span class="num">// 04</span>
+            <span class="desc"><strong>Reflect.</strong> What collapsed, what caused the worst damage, which fix worked, and what humans can do for real kelp forests.</span>
+          </div>
+        </div>
+
+        <div class="ngss-block">
+          <strong>NGSS · MS-LS2</strong>
+          <span class="body">Aligned with middle-school performance expectations on ecosystem dynamics, interactions, and resilience. The simulator's keystone-species behavior models MS-LS2-2 directly: California sheephead are removed; urchin populations explode; kelp collapses within seconds. Students see the cascade rather than memorizing it.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============== FILES / CREDITS ============== -->
+<div class="container">
+  <section class="files">
+    <div class="files-grid">
       <div>
-        <span class="eyebrow"><span class="pip"></span>Ecosystem Game · 8th Grade</span>
-        <h1>
-          <span class="ink">Save the</span><br>
-          <span class="pop">kelp forest.</span>
-        </h1>
-        <p class="lede">
-          Build a kelp forest food web. Watch what breaks it. Figure out how to bring it back. A 30–45 minute classroom game where every choice ripples through the whole ocean.
-        </p>
-
-        <div class="hero-meta">
-          <div class="stat"><strong>30–45</strong>minutes total</div>
-          <div class="stat"><strong>4 phases</strong>build · break · fix · reflect</div>
-          <div class="stat"><strong>3 rounds</strong>can your ocean survive?</div>
-        </div>
-
-        <div class="cta-row">
-          <a href="#game" class="btn">See how it works →</a>
-          <a href="#kit" class="btn btn-ghost">What's in the kit</a>
-        </div>
+        <h4>Submitted by</h4>
+        <p class="lead">Dongpo · Sara · Andrew</p>
+        <p>WRIT 340 — Advanced Writing &amp; Communication for Engineers. Prof. Elisabeth Arnold Weiss. Spring 2026. USC Viterbi School of Engineering.</p>
       </div>
-
-      <div class="hero-art" aria-hidden="true">
-        🌊
-        <div class="lbl">
-          <strong>Catalina kelp forest</strong>
-          <span>Hero illustration · WIP</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHY -->
-<section class="block">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">Why this game</span>
-      <h2>Three things you'll do that no textbook lets you do.</h2>
-    </div>
-
-    <div class="triptych">
-      <div class="card kelp">
-        <span class="num">01</span>
-        <h3>You build a real food web.</h3>
-        <p>Lay out organism cards on the ocean board. Connect them with arrows: who eats who, who eats what. By the end of Phase 1, you've made a living map of the whole kelp forest.</p>
-      </div>
-      <div class="card coral">
-        <span class="num">02</span>
-        <h3>You see what breaks it.</h3>
-        <p>Flip an "Uh Oh" card. Maybe sharks are gone. Maybe the water's getting warmer. Watch your food web start to fall apart, piece by piece.</p>
-      </div>
-      <div class="card aqua">
-        <span class="num">03</span>
-        <h3>You figure out how to fix it.</h3>
-        <p>Play a "Fix It" card. Protect predators. Start a kelp farm. Cut pollution. Try to bring your ocean back to balance before the round ends.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- KIT -->
-<section class="block" id="kit">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">What's in the box</span>
-      <h2>Five pieces. <span class="scribble">that's the whole kit!</span></h2>
-      <p>Designed to fit in a shoebox and run in any classroom. Replicable, printable, and built to scale.</p>
-    </div>
-
-    <div class="components-grid">
-      <div class="component">
-        <div class="pic">🌊</div>
-        <h4>Ocean Board</h4>
-        <p>Three zones · 1 board</p>
-      </div>
-      <div class="component">
-        <div class="pic">🟩</div>
-        <h4>Organism Cards</h4>
-        <p>8 species · big &amp; visual</p>
-      </div>
-      <div class="component">
-        <div class="pic">⚠️</div>
-        <h4>Uh Oh Cards</h4>
-        <p>Disruptions · 6 cards</p>
-      </div>
-      <div class="component">
-        <div class="pic">✅</div>
-        <h4>Fix It Cards</h4>
-        <p>Solutions · 6 cards</p>
-      </div>
-      <div class="component">
-        <div class="pic">📄</div>
-        <h4>Reflection Worksheet</h4>
-        <p>4 questions · short</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PHASES (static, all 4 visible) -->
-<section class="block" id="game">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">How a round works</span>
-      <h2>Four phases, one ecosystem.</h2>
-      <p>Each round of Tangled Tides moves through these four phases. The whole game takes about 30–45 minutes, and most classes play three rounds.</p>
-    </div>
-
-    <div class="phases">
-
-      <div class="phase">
-        <div class="phase-head">
-          <span class="phase-num"><em>Phase</em>01</span>
-          <span class="phase-time">~10 min</span>
-        </div>
-        <h3>Build your ocean.</h3>
-        <p>Place every organism card on the ocean board. Kelp goes deep, sea lions stay up top. Then connect them with strings or arrows: <em>who eats what</em>.</p>
-        <p>By the time you finish, the whole web should be visible at a glance: sun → kelp → urchins → sheephead → sea bass → sea lion. With side branches for lobsters, garibaldi, and the rest.</p>
-      </div>
-
-      <div class="phase">
-        <div class="phase-head">
-          <span class="phase-num"><em>Phase</em>02</span>
-          <span class="phase-time">~10–15 min</span>
-        </div>
-        <h3>Uh Oh cards. Now break it.</h3>
-        <p>Flip an Uh Oh card. Watch the food web react. Then play a Fix It card and try to bring it back to balance.</p>
-        <p>Example cards: <strong style="color:var(--cream)">"Too many sea urchins!"</strong> · <strong style="color:var(--cream)">"Predators are gone!"</strong> · <strong style="color:var(--cream)">"Water is getting warmer!"</strong></p>
-
-        <div class="wip">
-          <span class="wip-tag">🚧 WIP</span>
-          <h4>Interactive food web simulator</h4>
-          <p>This is where the digital companion to Phase 2 lives. Click an Uh Oh card, watch the SVG ecosystem react in real time. Click a Fix It card, watch it recover. Health meter, round counter, the works. Coming next iteration.</p>
-        </div>
-      </div>
-
-      <div class="phase">
-        <div class="phase-head">
-          <span class="phase-num"><em>Phase</em>03</span>
-          <span class="phase-time">~10–15 min</span>
-        </div>
-        <h3>Fix it challenge.</h3>
-        <p>This is where your team becomes the ecosystem managers. You've watched things break in Phase 2. Now figure out which Fix It cards undo the damage — and in what order.</p>
-        <p>Some fixes are obvious. Some aren't. <strong style="color:var(--cream)">"Reduce pollution"</strong> works for warming water but doesn't bring sharks back. <strong style="color:var(--cream)">"Protect predators"</strong> stops urchins but takes time to show up in the kelp. Real ocean managers think this way every day.</p>
-      </div>
-
-      <div class="phase">
-        <div class="phase-head">
-          <span class="phase-num"><em>Phase</em>04</span>
-          <span class="phase-time">~5–10 min</span>
-        </div>
-        <h3>Quick reflection.</h3>
-        <p>Four questions. Short answers. Not a quiz — a way to lock in what just happened.</p>
+      <div>
+        <h4>Partners</h4>
         <ul>
-          <li>What happened when kelp disappeared?</li>
-          <li>What caused the biggest problem?</li>
-          <li>Which Fix It worked best, and why?</li>
-          <li>Why does kelp matter — to fish, to people, to the planet?</li>
+          <li><a href="https://altasea.org/" target="_blank" rel="noopener">AltaSea // Port of Los Angeles</a></li>
+          <li><a href="https://www.accelerated.org/our-schools/tas/" target="_blank" rel="noopener">The Accelerated School</a></li>
+          <li><a href="https://eis.usc.edu/" target="_blank" rel="noopener">USC Viterbi // ATLAS</a></li>
         </ul>
       </div>
-
     </div>
-  </div>
-</section>
+  </section>
+</div>
 
-<!-- SCIENCE -->
-<section class="block">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">The science behind it</span>
-      <h2>One missing link can collapse the whole web.</h2>
-      <p>This isn't just a game design choice. It's how real ecosystems actually work.</p>
+<!-- ============== FOOTER ============== -->
+<div class="container">
+  <footer class="footer">
+    <div class="row">
+      <span>USC Viterbi // ATLAS — Kelp Forest Module</span>
+      <span class="right">end of transmission</span>
     </div>
+  </footer>
+</div>
 
-    <div class="science-grid">
-      <div class="science-art">
-        <div class="lvl"><span>Apex</span><span>🦭 sea lion</span></div>
-        <div class="lvl"><span>Predator</span><span>🐟 sheephead · bass</span></div>
-        <div class="lvl"><span>Grazer</span><span>🟣 urchins</span></div>
-        <div class="lvl"><span>Producer</span><span>🌿 giant kelp</span></div>
-      </div>
+<script>
+  /* =========================================================
+     ECOSYSTEM SIMULATION
+     A simplified Lotka-Volterra-style model of 6 species
+     in a Catalina kelp forest.
+     ========================================================= */
 
-      <div class="science-text">
-        <h3>The keystone test.</h3>
-        <p>In Catalina's kelp forests, <span class="term">California sheephead</span> are the keystone species — the one that holds everything else up. Their teeth crush sea urchins. Without sheephead, urchins explode. Without controls, urchins eat all the kelp. Without kelp, every other species loses its home.</p>
-        <p>One link breaks. Everything else follows. This is called a <span class="term">trophic cascade</span>, and California has lost <strong style="color:var(--cream)">up to 95% of its kelp forests</strong> in some areas because of exactly this kind of chain reaction.</p>
-        <p>Tangled Tides lets students <em>see</em> that chain reaction in 10 minutes, on a board, with cards in their hands. Then they get to try to stop it.</p>
-        <span class="ngss-tag">NGSS · MS-LS2</span>
-      </div>
-    </div>
-  </div>
-</section>
+  // species config: max display tokens, initial population, colors
+  const SPECIES = {
+    kelp:      { max: 24, eq: 18, pop: 18, color: '#88c4a0', code: 'KLP', glyph: null    },
+    urchin:    { max: 22, eq: 13, pop: 13, color: '#b48fd9', code: 'URC', glyph: 'hex'   },
+    sheephead: { max: 14, eq: 10, pop: 10, color: '#e8a948', code: 'SHP', glyph: 'star'  },
+    seabass:   { max: 12, eq: 8,  pop: 8,  color: '#7eb8d4', code: 'SBS', glyph: 'tri'   },
+    sealion:   { max: 8,  eq: 6,  pop: 6,  color: '#d24c40', code: 'SLN', glyph: 'sq'    },
+    lobster:   { max: 12, eq: 7,  pop: 7,  color: '#d49070', code: 'LBS', glyph: 'circ'  }
+  };
 
-<!-- EXTENSIONS -->
-<section class="block">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">Take it further</span>
-      <h2>Once you've played one round, make it harder.</h2>
-    </div>
+  /* -------- FOOD WEB / VIEW.C -------- */
+  const FW_LATIN = {
+    kelp:      'Macrocystis pyrifera',
+    urchin:    'Strongylocentrotus purp.',
+    sheephead: 'Semicossyphus pulcher',
+    seabass:   'Paralabrax clathratus',
+    sealion:   'Zalophus californianus',
+    lobster:   'Panulirus interruptus'
+  };
+  const FW_TIER_LABEL = { 1: 'L1 · plant', 2: 'L2 · grazer', 3: 'L3 · predator', 4: 'L4 · apex' };
+  // tier (1=producer ... 4=apex) and x position in 0..1
+  const FW_LAYOUT = {
+    kelp:      { tier: 1, x: 0.50 },
+    urchin:    { tier: 2, x: 0.14 },
+    lobster:   { tier: 2, x: 0.80 },
+    sheephead: { tier: 3, x: 0.28 },
+    seabass:   { tier: 3, x: 0.66 },
+    sealion:   { tier: 4, x: 0.47 }
+  };
+  // edges: prey -> predator (energy flows up)
+  const FW_EDGES = [
+    { from: 'kelp',      to: 'urchin'    },
+    { from: 'kelp',      to: 'lobster'   },
+    { from: 'urchin',    to: 'sheephead' },
+    { from: 'lobster',   to: 'seabass'   },
+    { from: 'sheephead', to: 'sealion'   },
+    { from: 'seabass',   to: 'sealion'   }
+  ];
+  const FW_KEYSTONE = new Set(['sheephead']);
+  const fwNodes = {}; // name -> {el, cx, cy}
+  const fwEdges = []; // {from, to, path, marker, len}
 
-    <div class="ext-grid">
-      <div class="ext">
-        <div class="ico">🏆</div>
-        <h4>Run all 3 rounds</h4>
-        <p>Same ecosystem, different Uh Oh card each round. Track which fixes worked best. Build a class leaderboard.</p>
-      </div>
-      <div class="ext">
-        <div class="ico">⏱</div>
-        <h4>Time it</h4>
-        <p>Race teams on which can rebalance fastest. Fast doesn't always mean stable — discuss why after.</p>
-      </div>
-      <div class="ext">
-        <div class="ico">🔍</div>
-        <h4>Research a species</h4>
-        <p>Pick one organism card. Find out where it actually lives, what it eats, and what threatens it. Add a note to the card.</p>
-      </div>
-      <div class="ext">
-        <div class="ico">✏️</div>
-        <h4>Make your own Uh Oh card</h4>
-        <p>What's a real disruption you've read about? Plastic pollution? Oil spills? Write your own card and share with the class.</p>
-      </div>
-      <div class="ext">
-        <div class="ico">📣</div>
-        <h4>Pitch a real fix</h4>
-        <p>If your team had a real-world budget, what would you spend it on? Write a one-page proposal to your local government.</p>
-      </div>
-      <div class="ext">
-        <div class="ico">🌊</div>
-        <h4>Visit a real one</h4>
-        <p>AltaSea, Cabrillo Marine Aquarium, or the Catalina coast all let you see kelp forests in real life. Field trip incoming.</p>
-      </div>
-    </div>
-  </div>
-</section>
+  /* TNO / Vectrex CRT vector-display silhouettes — pure line art, no fills.
+     Stroke uses each species' simulator color so food web nodes match the bars,
+     graph, and HUD glyphs. */
+  function makeTNOSilhouette(name) {
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    const STROKE = (SPECIES[name] && SPECIES[name].color) || '#a8e8c8';
+    const SW = 1.2;
 
-<!-- CREDITS -->
-<section class="credits">
-  <div class="container">
-    <div class="credits-grid">
-      <div>
-        <h4>Made by</h4>
-        <p class="team">Eri · Sara · Andrew</p>
-        <p>WRIT 340: Advanced Writing &amp; Communication for Engineers, taught by Prof. Elisabeth Arnold Weiss. Spring 2026.</p>
-      </div>
-      <div>
-        <h4>In partnership with</h4>
-        <ul>
-          <li><a href="https://altasea.org/" target="_blank" rel="noopener">AltaSea at the Port of Los Angeles</a></li>
-          <li><a href="https://www.accelerated.org/our-schools/tas/" target="_blank" rel="noopener">The Accelerated School (TAS)</a></li>
-          <li><a href="https://eis.usc.edu/" target="_blank" rel="noopener">USC Viterbi · ATLAS</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Resources</h4>
-        <ul>
-          <li><a href="#" class="wip-link">Teacher Guide (PDF)</a></li>
-          <li><a href="#" class="wip-link">Organism Cards (printable)</a></li>
-          <li><a href="#" class="wip-link">Uh Oh + Fix It deck</a></li>
-          <li><a href="#" class="wip-link">Reflection Worksheet</a></li>
-          <li><a href="#" class="wip-link">NGSS MS-LS2 Alignment</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+    const mk = (tag, attrs) => {
+      const el = document.createElementNS(SVG_NS, tag);
+      Object.keys(attrs).forEach(k => el.setAttribute(k, attrs[k]));
+      el.setAttribute('fill', 'none');
+      el.setAttribute('stroke', STROKE);
+      el.setAttribute('stroke-width', String(SW));
+      el.setAttribute('stroke-linecap', 'round');
+      el.setAttribute('stroke-linejoin', 'round');
+      el.setAttribute('vector-effect', 'non-scaling-stroke');
+      return el;
+    };
 
-<footer class="footer">
-  <span>Tangled Tides</span> &nbsp;·&nbsp; A kelp forest ecosystem game for 8th graders &nbsp;·&nbsp; Scaling through sharing
-</footer>
+    if (name === 'kelp') {
+      svg.setAttribute('viewBox', '0 0 30 60');
+      // tall sinuous stipe
+      svg.appendChild(mk('path', { d: 'M 15 60 Q 18 50 14 42 Q 10 34 16 26 Q 20 18 14 10 Q 11 5 15 0' }));
+      // alternating blades — long ovals on each side
+      [[10, 48, -1], [20, 38, 1], [9, 30, -1], [21, 22, 1], [11, 14, -1], [19, 6, 1]].forEach(([cx, cy, side]) => {
+        svg.appendChild(mk('ellipse', { cx, cy, rx: 5, ry: 1.6, transform: `rotate(${side*30} ${cx} ${cy})` }));
+      });
+      // pneumatocysts (gas bladders) — small circles at blade bases
+      [[14, 48], [16, 38], [13, 30], [17, 22], [15, 14]].forEach(([cx, cy]) => {
+        svg.appendChild(mk('circle', { cx, cy, r: 1 }));
+      });
+      // holdfast roots
+      svg.appendChild(mk('path', { d: 'M 15 60 L 10 60 M 15 60 L 20 60 M 15 60 L 12 58 M 15 60 L 18 58' }));
+    } else if (name === 'urchin') {
+      svg.setAttribute('viewBox', '-20 -20 40 40');
+      // central body circle
+      svg.appendChild(mk('circle', { cx: 0, cy: 0, r: 7 }));
+      // 16 radial spines
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2;
+        svg.appendChild(mk('line', {
+          x1: Math.cos(a) * 7, y1: Math.sin(a) * 7,
+          x2: Math.cos(a) * 17, y2: Math.sin(a) * 17
+        }));
+      }
+      // mouth — central pentagon (Aristotle's lantern)
+      svg.appendChild(mk('circle', { cx: 0, cy: 0, r: 2 }));
+    } else if (name === 'lobster') {
+      svg.setAttribute('viewBox', '0 0 60 32');
+      // top-down. carapace (head/thorax)
+      svg.appendChild(mk('path', { d: 'M 22 16 Q 20 10 26 7 Q 32 5 38 7 Q 44 10 42 16 Q 44 22 38 25 Q 32 27 26 25 Q 20 22 22 16 Z' }));
+      // segmented tail (4 segments + fan)
+      svg.appendChild(mk('path', { d: 'M 22 13 L 17 12 L 17 20 L 22 19' }));
+      svg.appendChild(mk('path', { d: 'M 17 13 L 12 12 L 12 20 L 17 19' }));
+      svg.appendChild(mk('path', { d: 'M 12 13 L 8 12 L 8 20 L 12 19' }));
+      svg.appendChild(mk('path', { d: 'M 8 12 L 2 8 M 8 16 L 0 16 M 8 20 L 2 24' }));
+      // 4 walking legs each side
+      [[28, 8], [33, 8], [37, 8], [40, 9]].forEach(([x, y]) => {
+        svg.appendChild(mk('line', { x1: x, y1: y, x2: x - 1, y2: y - 5 }));
+      });
+      [[28, 24], [33, 24], [37, 24], [40, 23]].forEach(([x, y]) => {
+        svg.appendChild(mk('line', { x1: x, y1: y, x2: x - 1, y2: y + 5 }));
+      });
+      // long whip antennae forward (signature of spiny lobster)
+      svg.appendChild(mk('path', { d: 'M 42 14 Q 52 10 60 6' }));
+      svg.appendChild(mk('path', { d: 'M 42 18 Q 52 22 60 26' }));
+      // eyes
+      svg.appendChild(mk('circle', { cx: 40, cy: 12, r: 1 }));
+      svg.appendChild(mk('circle', { cx: 40, cy: 20, r: 1 }));
+    } else if (name === 'sheephead') {
+      svg.setAttribute('viewBox', '0 0 60 28');
+      // body — fat oval with prominent forehead bump
+      svg.appendChild(mk('path', { d: 'M 50 8 Q 55 7 58 14 Q 55 21 50 20 L 42 21 Q 30 24 18 22 Q 12 21 6 16 Q 4 14 6 12 Q 12 7 18 6 Q 30 4 42 7 Z' }));
+      // forehead hump (signature)
+      svg.appendChild(mk('path', { d: 'M 18 6 Q 22 1 30 2 Q 38 3 42 7' }));
+      // forked tail
+      svg.appendChild(mk('path', { d: 'M 50 8 L 58 2 M 50 20 L 58 26 M 58 2 L 58 26' }));
+      // dorsal fin spikes
+      svg.appendChild(mk('path', { d: 'M 28 4 L 30 1 L 32 4 L 34 1 L 36 4' }));
+      // gill arc + eye
+      svg.appendChild(mk('path', { d: 'M 14 10 Q 12 14 14 18' }));
+      svg.appendChild(mk('circle', { cx: 10, cy: 14, r: 1.4 }));
+      // protruding teeth (sheephead is named for its sheep-like teeth)
+      svg.appendChild(mk('path', { d: 'M 4 14 L 2 14 M 4 12 L 2 13 M 4 16 L 2 15' }));
+    } else if (name === 'seabass') {
+      svg.setAttribute('viewBox', '0 0 64 22');
+      // elongated streamlined body
+      svg.appendChild(mk('path', { d: 'M 54 6 Q 58 5 60 11 Q 58 17 54 16 Q 40 19 22 18 Q 12 17 4 12 Q 12 5 22 4 Q 40 3 54 6 Z' }));
+      // forked tail
+      svg.appendChild(mk('path', { d: 'M 54 6 L 64 1 M 54 16 L 64 21 M 64 1 L 64 21' }));
+      // long spiny dorsal fin (seabass signature — many spines)
+      svg.appendChild(mk('path', { d: 'M 18 4 L 19 1 L 22 3 L 24 1 L 27 3 L 30 1 L 33 3 L 36 1 L 39 3 L 42 1 L 45 4' }));
+      // 2nd dorsal soft + anal fin
+      svg.appendChild(mk('path', { d: 'M 18 18 Q 22 21 28 19' }));
+      // gill cover line
+      svg.appendChild(mk('path', { d: 'M 14 6 Q 12 11 14 16' }));
+      // eye
+      svg.appendChild(mk('circle', { cx: 9, cy: 11, r: 1.3 }));
+      // lateral stripe (seabass has banded markings)
+      svg.appendChild(mk('path', { d: 'M 14 11 L 50 11', 'stroke-dasharray': '3 2' }));
+    } else if (name === 'sealion') {
+      svg.setAttribute('viewBox', '0 0 70 32');
+      // sleek pinniped body
+      svg.appendChild(mk('path', { d: 'M 60 10 Q 66 12 64 16 Q 66 20 60 22 Q 50 25 40 24 Q 24 24 12 22 Q 6 21 4 18 L 0 22 L 2 16 L 0 10 L 4 14 Q 6 11 12 10 Q 24 8 40 8 Q 50 7 60 10 Z' }));
+      // head detail — snout
+      svg.appendChild(mk('path', { d: 'M 60 13 Q 68 14 68 16 Q 68 18 60 19' }));
+      // whiskers (sea lion signature)
+      svg.appendChild(mk('path', { d: 'M 67 17 L 70 16 M 67 18 L 70 19 M 65 19 L 70 21' }));
+      // small ear (external ear flap = sea lion vs seal)
+      svg.appendChild(mk('path', { d: 'M 56 9 L 56 6 L 58 7' }));
+      // eye
+      svg.appendChild(mk('circle', { cx: 60, cy: 14, r: 1.2 }));
+      // fore flipper underneath (signature long flipper)
+      svg.appendChild(mk('path', { d: 'M 30 22 Q 32 30 42 28 Q 38 24 30 22 Z' }));
+      // rear flipper hint at tail
+      svg.appendChild(mk('path', { d: 'M 4 22 L 0 28 M 0 22 L 0 28' }));
+    } else if (name === 'otter') {
+      // CUTE SEA OTTER — TOP-DOWN view of an otter back-floating, but
+      // intentionally OFF-AXIS so it doesn't read as a stiff symmetrical
+      // mascot. Body & head are tilted ~8° clockwise. The otter is mid-
+      // "wiggle": one back foot kicked higher than the other, head cocked,
+      // paws clasping a tiny urchin/shell over the chest. Sadness reads
+      // through tiny droopy lids + ONE small tear, but the silhouette
+      // stays round, soft, and warm.
+      svg.setAttribute('viewBox', '-26 -28 52 56');
+
+      // palette — slightly warmer + brighter than the previous version
+      const BODY     = '#b88a5c';   // wet caramel fur
+      const BODY_LO  = '#9b7144';   // shadow side of body (right-rear)
+      const BELLY    = '#ecd0a0';   // dry pale belly fur
+      const BELLY_HI = '#f7e3bd';   // brightest belly highlight
+      const FACE     = '#e2bc8c';   // lighter face fur
+      const FACE_HI  = '#f4ddb6';   // pale muzzle/cheek mask
+      const FEATURE  = '#2a1a10';   // black-brown eyes/nose
+      const BLUSH    = '#e89890';   // cheek blush
+      const PINK     = '#e89aa0';   // ear interior
+      const TEAR     = '#a8d6ee';
+      const SHINE    = '#fff8e8';
+      const URCHIN   = '#5d3a72';   // little urchin in paws (purple)
+      const URCHIN_HI= '#8657a0';
+      const WATER1   = '#1f4a6b';
+      const WATER2   = '#2c6388';
+      const OUT      = '#2a1a10';
+
+      const mk = (tag, attrs) => {
+        const el = document.createElementNS(SVG_NS, tag);
+        Object.keys(attrs).forEach(k => el.setAttribute(k, attrs[k]));
+        el.setAttribute('vector-effect', 'non-scaling-stroke');
+        return el;
+      };
+
+      // ─── WATER backdrop (oval pool the otter is floating in)
+      svg.appendChild(mk('ellipse', { cx: 0, cy: 0, rx: 25, ry: 26, fill: WATER1 }));
+      // asymmetric ripple rings — offset slightly so they don't form perfect bullseyes
+      [
+        { rx: 11, ry: 10, cx: 1, cy: 3, op: 0.42 },
+        { rx: 17, ry: 15, cx: -1, cy: 4, op: 0.28 },
+        { rx: 23, ry: 21, cx: 2, cy: 2, op: 0.18 },
+      ].forEach(r => {
+        svg.appendChild(mk('ellipse', {
+          cx: r.cx, cy: r.cy, rx: r.rx, ry: r.ry,
+          fill: 'none', stroke: WATER2, 'stroke-width': '0.6', opacity: r.op
+        }));
+      });
+      // a couple of tiny bubble specks for life
+      [[-14, -6, 0.9], [16, 8, 0.7], [-10, 14, 0.6], [14, -12, 0.5]].forEach(([x, y, r]) => {
+        svg.appendChild(mk('circle', { cx: x, cy: y, r, fill: WATER2, opacity: 0.6 }));
+      });
+
+      // ─── ALL otter parts go inside a tilted group so the whole creature
+      // sits a little crooked in the water. Breaks the rigid symmetry.
+      const otter = mk('g', { transform: 'rotate(-7) translate(0.5, 0.5)' });
+      svg.appendChild(otter);
+      const add = (tag, attrs) => {
+        const el = mk(tag, attrs);
+        otter.appendChild(el);
+        return el;
+      };
+
+      // ─── 1) BODY — vertical peanut. Slightly chunkier on the LEFT side
+      // (otter rolled a little) so the silhouette isn't mirrored.
+      add('path', {
+        d: 'M -7 -18 ' +
+           'Q 0 -22.5  7 -18 ' +
+           'Q 11.5 -14  10.5 -8 ' +
+           'Q 13 -2   13 5 ' +
+           'Q 13 12   9 16 ' +
+           'Q 4 19    0 19 ' +
+           'Q -4.5 19 -9.5 16 ' +
+           'Q -13.5 12 -13.5 5 ' +     // a touch wider on the left
+           'Q -13.5 -2 -10.5 -8 ' +
+           'Q -11.5 -14 -7 -18 Z',
+        fill: BODY, stroke: OUT, 'stroke-width': '1.4', 'stroke-linejoin': 'round'
+      });
+
+      // soft shadow on the body's lower-right (gives it volume, kills flatness)
+      add('path', {
+        d: 'M 4 -2 Q 12 0 13 6 Q 13 12 9 16 Q 5 18 2 17 Q 9 10 8 2 Z',
+        fill: BODY_LO, opacity: 0.55
+      });
+
+      // ─── 2) FUR TUFTS along the head/shoulder — break the smooth curve
+      // with a few rounded bumps. Asymmetric placement on purpose.
+      [
+        { cx: -5.5, cy: -19.4, rx: 1.6, ry: 1.2 },
+        { cx: -1,   cy: -21.2, rx: 1.4, ry: 1.1 },
+        { cx:  4,   cy: -20.6, rx: 1.5, ry: 1.1 },
+        { cx:  8.2, cy: -16,   rx: 1.4, ry: 1.0 },
+        { cx: -9.5, cy: -14,   rx: 1.3, ry: 1.0 },
+      ].forEach(t => {
+        add('ellipse', { ...t, fill: BODY, stroke: OUT, 'stroke-width': '1.1' });
+      });
+
+      // ─── 3) DRY CREAM BELLY — also slightly off-center & asymmetric
+      add('path', {
+        d: 'M -6 -8 ' +
+           'Q 0.5 -10  6.5 -8 ' +
+           'Q 9.5 -2   9.5 5 ' +
+           'Q 9 11   6 14 ' +
+           'Q 0 16  -6.5 14 ' +
+           'Q -9.5 11 -9 5 ' +
+           'Q -9.5 -2 -6 -8 Z',
+        fill: BELLY
+      });
+      // brighter highlight blob on belly (upper-left, breaks symmetry)
+      add('ellipse', { cx: -2.5, cy: -3, rx: 4, ry: 3, fill: BELLY_HI, opacity: 0.7 });
+
+      // ─── 4) TAIL — slightly curled to one side instead of straight down
+      add('path', {
+        d: 'M -4 18 Q 0 17 4 18 Q 6 22 5 25.5 Q 2 27 -1 26.5 Q -4 25 -4 18 Z',
+        fill: BODY, stroke: OUT, 'stroke-width': '1.2', 'stroke-linejoin': 'round'
+      });
+
+      // ─── 5) BACK FEET (FLIPPERS) — INTENTIONALLY ASYMMETRIC.
+      // Right flipper kicked higher and more spread (mid-wiggle); left
+      // flipper relaxed lower & rotated more outward.
+      const flipper = (side, lift, splay, scale) => {
+        const x0 = 6 * side;
+        const dir = side;
+        const ty = -lift;  // negative ty pushes the flipper UP (smaller y)
+        const w = 6 * scale, w2 = 9 * scale, w3 = 11 * scale, w4 = 8 * scale, w5 = 5 * scale, w6 = 2 * scale;
+        const h0 = 14 + ty, h1 = 11 + ty - splay, h2 = 14 + ty - splay, h3 = 18 + ty - splay, h4 = 21 + ty, h5 = 22 + ty, h6 = 19 + ty, h7 = 16 + ty;
+        add('path', {
+          d: `M ${x0} ${h0} ` +
+             `Q ${x0 + w * dir} ${h1}  ${x0 + w2 * dir} ${h2} ` +
+             `Q ${x0 + w3 * dir} ${h3}  ${x0 + w4 * dir} ${h4} ` +
+             `Q ${x0 + w5 * dir} ${h5}   ${x0 + w6 * dir} ${h6} ` +
+             `Q ${x0 - 1 * dir} ${h7}   ${x0} ${h0} Z`,
+          fill: BODY, stroke: OUT, 'stroke-width': '1.2', 'stroke-linejoin': 'round'
+        });
+        // pink toe-pad row on the inner edge of the paddle
+        for (let i = 0; i < 4; i++) {
+          const t = i / 3;
+          const tx = x0 + (5.5 + t * 3) * dir;
+          const tyy = 16 + t * 4 + ty - splay * 0.5;
+          add('ellipse', { cx: tx, cy: tyy, rx: 0.55, ry: 0.7, fill: PINK, opacity: 0.85 });
+          add('path', {
+            d: `M ${tx} ${tyy + 0.6} L ${tx + 0.5 * dir} ${tyy + 2}`,
+            fill: 'none', stroke: OUT, 'stroke-width': '0.5', 'stroke-linecap': 'round'
+          });
+        }
+      };
+      flipper(-1, 5, 1.5,  0.75);  // LEFT flipper: tucked in, lifted higher
+      flipper( 1, 6, 2.0,  0.8);   // RIGHT flipper: kicked highest, hugs body
+
+      // ─── 6) FRONT PAWS clasped over the chest, holding a tiny URCHIN.
+      // The urchin gives the paws something purposeful to do (and is a
+      // delightful keystone in-joke). Paws tilt slightly to the otter's
+      // right so they don't sit perfectly on the centerline.
+      const pawsCx = 0.6, pawsCy = 1.2;
+      // little arms tucking in from the shoulders to the paws
+      add('path', {
+        d: `M -7 -4 Q -5 -1 ${pawsCx - 2.8} ${pawsCy - 0.5}`,
+        fill: 'none', stroke: OUT, 'stroke-width': '1.0', 'stroke-linecap': 'round', opacity: 0.55
+      });
+      add('path', {
+        d: `M  7 -4 Q  5 -1 ${pawsCx + 2.8} ${pawsCy - 0.5}`,
+        fill: 'none', stroke: OUT, 'stroke-width': '1.0', 'stroke-linecap': 'round', opacity: 0.55
+      });
+      // paws first — sit BELOW the urchin so urchin reads on top
+      add('ellipse', {
+        cx: pawsCx - 2.6, cy: pawsCy + 0.7, rx: 2.3, ry: 2.6,
+        fill: BODY, stroke: OUT, 'stroke-width': '1.1',
+        transform: `rotate(-20 ${pawsCx - 2.6} ${pawsCy + 0.7})`
+      });
+      add('ellipse', {
+        cx: pawsCx + 2.6, cy: pawsCy + 1.0, rx: 2.3, ry: 2.6,
+        fill: BODY, stroke: OUT, 'stroke-width': '1.1',
+        transform: `rotate(20 ${pawsCx + 2.6} ${pawsCy + 1.0})`
+      });
+      // urchin (purple spiky ball) — DRAWN ON TOP of paws so the otter is
+      // visibly clutching/cradling it. Bigger + more spokes than before.
+      const urchinCx = pawsCx, urchinCy = pawsCy - 0.4;
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        const r1 = 2.0, r2 = 3.4;
+        add('line', {
+          x1: urchinCx + Math.cos(a) * r1, y1: urchinCy + Math.sin(a) * r1,
+          x2: urchinCx + Math.cos(a) * r2, y2: urchinCy + Math.sin(a) * r2,
+          stroke: URCHIN, 'stroke-width': '0.7', 'stroke-linecap': 'round'
+        });
+      }
+      add('circle', { cx: urchinCx, cy: urchinCy, r: 2.1, fill: URCHIN, stroke: OUT, 'stroke-width': '0.9' });
+      add('circle', { cx: urchinCx - 0.7, cy: urchinCy - 0.7, r: 0.7, fill: URCHIN_HI, opacity: 0.85 });
+      // tiny toe lines visible at the outer paw edges (clutching pose)
+      add('path', {
+        d: `M ${pawsCx - 4.2} ${pawsCy - 0.4} L ${pawsCx - 3.8} ${pawsCy + 0.5} ` +
+           `M ${pawsCx - 3.5} ${pawsCy - 0.9} L ${pawsCx - 3.2} ${pawsCy + 0.0} ` +
+           `M ${pawsCx + 3.5} ${pawsCy - 0.7} L ${pawsCx + 3.3} ${pawsCy + 0.4} ` +
+           `M ${pawsCx + 4.2} ${pawsCy - 0.2} L ${pawsCx + 4.0} ${pawsCy + 0.7}`,
+        fill: 'none', stroke: OUT, 'stroke-width': '0.5', 'stroke-linecap': 'round'
+      });
+
+      // ─── 7) HEAD — tilted slightly to the otter's left (head-cocked).
+      // We draw the whole head as its own subgroup so the tilt compounds
+      // cleanly on top of the body's tilt.
+      const HEAD_CX = -0.5, HEAD_CY = -15;
+      const head = mk('g', { transform: `rotate(8 ${HEAD_CX} ${HEAD_CY})` });
+      otter.appendChild(head);
+      const hadd = (tag, attrs) => {
+        const el = mk(tag, attrs);
+        head.appendChild(el);
+        return el;
+      };
+
+      // pale face mask (rounder, slightly oval, off-axis)
+      hadd('ellipse', { cx: HEAD_CX, cy: HEAD_CY, rx: 8, ry: 7, fill: FACE });
+      // even paler central muzzle area
+      hadd('ellipse', { cx: HEAD_CX, cy: HEAD_CY + 2, rx: 6, ry: 5, fill: FACE_HI });
+
+      // ─── EARS — sit on top-corners of the head, NOT next to the eyes
+      hadd('ellipse', { cx: HEAD_CX - 6.4, cy: HEAD_CY - 5.2, rx: 1.7, ry: 1.4, fill: BODY, stroke: OUT, 'stroke-width': '0.9', transform: `rotate(-25 ${HEAD_CX - 6.4} ${HEAD_CY - 5.2})` });
+      hadd('ellipse', { cx: HEAD_CX + 6.2, cy: HEAD_CY - 5.4, rx: 1.5, ry: 1.2, fill: BODY, stroke: OUT, 'stroke-width': '0.9', transform: `rotate(20 ${HEAD_CX + 6.2} ${HEAD_CY - 5.4})` });
+      hadd('ellipse', { cx: HEAD_CX - 6.5, cy: HEAD_CY - 5.0, rx: 0.7, ry: 0.5, fill: PINK, transform: `rotate(-25 ${HEAD_CX - 6.5} ${HEAD_CY - 5.0})` });
+      hadd('ellipse', { cx: HEAD_CX + 6.2, cy: HEAD_CY - 5.3, rx: 0.55, ry: 0.4, fill: PINK });
+
+      // ─── CHEEK BLUSH — two soft pink ovals where the cheeks would be
+      hadd('ellipse', { cx: HEAD_CX - 4.5, cy: HEAD_CY - 0.5, rx: 1.6, ry: 1.0, fill: BLUSH, opacity: 0.55 });
+      hadd('ellipse', { cx: HEAD_CX + 4.2, cy: HEAD_CY - 0.5, rx: 1.6, ry: 1.0, fill: BLUSH, opacity: 0.55 });
+
+      // ─── NOSE — heart pointing UP, sits a smidge LEFT of the centerline
+      const NX = HEAD_CX - 0.2, NY = HEAD_CY - 1.4;
+      hadd('path', {
+        d: `M ${NX - 2.0} ${NY - 0.8} ` +
+           `Q ${NX - 2.2} ${NY - 2.4} ${NX - 0.9} ${NY - 2.4} ` +
+           `Q ${NX} ${NY - 1.7}  ${NX + 0.9} ${NY - 2.4} ` +
+           `Q ${NX + 2.2} ${NY - 2.4} ${NX + 2.0} ${NY - 0.8} ` +
+           `Q ${NX + 1.3} ${NY + 0.9}  ${NX} ${NY + 1.4} ` +
+           `Q ${NX - 1.3} ${NY + 0.9} ${NX - 2.0} ${NY - 0.8} Z`,
+        fill: FEATURE, stroke: OUT, 'stroke-width': '0.5'
+      });
+      // bright nose-tip shine — off-center upper-left for a bit of life
+      hadd('ellipse', { cx: NX - 0.7, cy: NY - 1.4, rx: 0.55, ry: 0.4, fill: SHINE, opacity: 0.9 });
+
+      // ─── EYES — BIG round shiny beads. NOT identical: left eye slightly
+      // larger (closer to the "viewer"), right eye a touch lower. Both
+      // have huge highlights — this is what makes it cute.
+      const drawEye = (cx, cy, rx, ry, sad) => {
+        // eye-white sclera (just a faint hint, sets eye apart from face)
+        hadd('ellipse', { cx, cy, rx: rx + 0.3, ry: ry + 0.3, fill: '#fffaee', opacity: 0.4 });
+        // dark eye
+        hadd('ellipse', { cx, cy, rx, ry, fill: FEATURE });
+        // BIG primary catch-light (upper-left)
+        hadd('ellipse', { cx: cx - rx * 0.35, cy: cy - ry * 0.45, rx: rx * 0.45, ry: ry * 0.45, fill: SHINE });
+        // smaller secondary glint (lower-right)
+        hadd('circle', { cx: cx + rx * 0.4, cy: cy + ry * 0.35, r: rx * 0.18, fill: SHINE });
+        // tiny third sparkle for shine
+        hadd('circle', { cx: cx - rx * 0.55, cy: cy + ry * 0.05, r: rx * 0.08, fill: SHINE, opacity: 0.8 });
+        // gentle droopy upper lid (sad but soft, not heavy)
+        if (sad) {
+          hadd('path', {
+            d: `M ${cx - rx - 0.1} ${cy - ry * 0.55} Q ${cx} ${cy - ry * 0.05} ${cx + rx + 0.1} ${cy - ry * 0.45}`,
+            fill: 'none', stroke: OUT, 'stroke-width': '0.9', 'stroke-linecap': 'round'
+          });
+        }
+      };
+      drawEye(HEAD_CX - 3.4, HEAD_CY + 1.0, 1.9, 2.2, true);
+      drawEye(HEAD_CX + 3.0, HEAD_CY + 1.4, 1.7, 2.0, true);
+
+      // ─── GENTLE WORRY BROWS — short, soft, well ABOVE the eyes so the
+      // face doesn't look angry. Asymmetric: left brow slightly higher
+      // & more arched, right brow lower and shorter.
+      hadd('path', {
+        d: `M ${HEAD_CX - 5.4} ${HEAD_CY - 2.6} Q ${HEAD_CX - 3.6} ${HEAD_CY - 3.2} ${HEAD_CX - 1.8} ${HEAD_CY - 2.2}`,
+        fill: 'none', stroke: OUT, 'stroke-width': '0.85', 'stroke-linecap': 'round', opacity: 0.75
+      });
+      hadd('path', {
+        d: `M ${HEAD_CX + 1.6} ${HEAD_CY - 2.0} Q ${HEAD_CX + 3.3} ${HEAD_CY - 2.9} ${HEAD_CX + 5.0} ${HEAD_CY - 2.4}`,
+        fill: 'none', stroke: OUT, 'stroke-width': '0.8', 'stroke-linecap': 'round', opacity: 0.7
+      });
+
+      // ─── MOUTH — single tiny rounded "ω"-style sad-but-cute mouth, ONE
+      // line only (no extra pout dip — that was overcrowding the face).
+      const MX = HEAD_CX, MY = HEAD_CY + 0.6;
+      hadd('path', {
+        d: `M ${MX - 1.4} ${MY} Q ${MX - 0.7} ${MY + 0.5} ${MX} ${MY + 0.1} Q ${MX + 0.7} ${MY + 0.5} ${MX + 1.4} ${MY}`,
+        fill: 'none', stroke: OUT, 'stroke-width': '0.9', 'stroke-linecap': 'round'
+      });
+
+      // ─── WHISKER DOTS — asymmetric (3 left, 2 right)
+      [[-3.0, -1.2], [-3.4, -0.2], [-3.1, 0.6], [2.9, -1.0], [3.2, 0.1]].forEach(([dx, dy]) => {
+        hadd('circle', { cx: HEAD_CX + dx, cy: HEAD_CY + dy, r: 0.22, fill: OUT, opacity: 0.75 });
+      });
+
+      // ─── ONE small TEARDROP welling at the outer corner of the LEFT
+      // eye. Smaller than before so it doesn't dominate.
+      hadd('path', {
+        d: `M ${HEAD_CX - 4.9} ${HEAD_CY + 1.6} Q ${HEAD_CX - 5.3} ${HEAD_CY + 2.6} ${HEAD_CX - 4.6} ${HEAD_CY + 3.0} Q ${HEAD_CX - 4.2} ${HEAD_CY + 2.3} ${HEAD_CX - 4.5} ${HEAD_CY + 1.7} Z`,
+        fill: TEAR, stroke: '#6a9ec0', 'stroke-width': '0.35'
+      });
+      hadd('circle', { cx: HEAD_CX - 4.9, cy: HEAD_CY + 2.2, r: 0.22, fill: SHINE });
+
+      // ─── 14) Soft amber CRT tint to keep it in the phosphor world
+      svg.appendChild(mk('rect', {
+        x: -26, y: -28, width: 52, height: 56,
+        fill: '#e8a948', opacity: 0.08
+      }));
+    }
+
+    return svg;
+  }
+
+  function buildFoodWeb() {
+    const stage = document.getElementById('fwStage');
+    const svg = document.getElementById('fwSvg');
+    if (!stage || !svg) return;
+
+    // tier dividers (4 horizontal bands top→bottom: L4, L3, L2, L1)
+    const TIERS = [4, 3, 2, 1];
+    const tierY = {}; // tier -> y fraction in [0..1]
+    TIERS.forEach((t, i) => {
+      const y = (i + 0.5) / TIERS.length;
+      tierY[t] = y;
+      const div = document.createElement('div');
+      div.className = 'fw-tier';
+      div.style.top = (i / TIERS.length * 100) + '%';
+      stage.appendChild(div);
+    });
+
+    // right-side gutter — schematic legend with tick marks
+    const gutter = document.createElement('div');
+    gutter.className = 'fw-gutter';
+    TIERS.forEach((t, i) => {
+      const y = (i + 0.5) / TIERS.length;
+      const tick = document.createElement('span');
+      tick.className = 'gtick';
+      tick.style.top = (y * 100) + '%';
+      gutter.appendChild(tick);
+      const lbl = document.createElement('span');
+      lbl.className = 'glbl';
+      lbl.style.top = (y * 100) + '%';
+      const parts = FW_TIER_LABEL[t].split(' · ');
+      lbl.innerHTML = '<span class="tk">' + parts[0] + '</span><br>' + (parts[1] || '');
+      gutter.appendChild(lbl);
+    });
+    stage.appendChild(gutter);
+
+    // build node cards
+    Object.keys(FW_LAYOUT).forEach(name => {
+      const sp = SPECIES[name];
+      const cfg = FW_LAYOUT[name];
+      const node = document.createElement('div');
+      node.className = 'fw-node';
+      if (FW_KEYSTONE.has(name)) node.classList.add('keystone');
+      node.style.left = (cfg.x * 100) + '%';
+      node.style.top = (tierY[cfg.tier] * 100) + '%';
+      node.dataset.species = name;
+
+      // silhouette — TNO-style flat blocky profile
+      const sil = document.createElement('div');
+      sil.className = 'silhouette';
+      const silSvg = makeTNOSilhouette(name);
+      sil.appendChild(silSvg);
+      node.appendChild(sil);
+
+      const common = document.createElement('div');
+      common.className = 'common';
+      common.textContent = name;
+      common.style.color = sp.color;
+      node.appendChild(common);
+
+      const latin = document.createElement('div');
+      latin.className = 'latin';
+      latin.textContent = FW_LATIN[name];
+      node.appendChild(latin);
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const tier = document.createElement('span');
+      tier.className = 'tier';
+      tier.textContent = 'pop';
+      meta.appendChild(tier);
+      const pop = document.createElement('span');
+      pop.className = 'pop';
+      pop.textContent = String(Math.round(sp.pop)).padStart(2, '0');
+      pop.id = 'fwPop_' + name;
+      meta.appendChild(pop);
+      node.appendChild(meta);
+
+      // corner rivets via two extra spans (CSS handles two via ::before/::after)
+      const cb1 = document.createElement('span'); cb1.className = 'cb1';
+      const cb2 = document.createElement('span'); cb2.className = 'cb2';
+      node.appendChild(cb1); node.appendChild(cb2);
+
+      stage.appendChild(node);
+      fwNodes[name] = { el: node, x: cfg.x, y: tierY[cfg.tier] };
+    });
+
+    drawFoodWebEdges();
+    fwHoverHandlers();
+    buildOtterGhost(stage, tierY);
+  }
+
+  /* OTTER GHOST — extirpated keystone memorial.
+     Placed at L3 center (x=0.50) which is currently empty in the 5-column
+     symmetric layout. Floats slightly above the L3 row so it doesn't crash
+     into Sheephead/Seabass cards. Click for backstory popup. */
+  function buildOtterGhost(stage, tierY) {
+    const node = document.createElement('div');
+    node.className = 'fw-node ghost';
+    node.style.left = '50%';
+    // Sit cleanly on the L3 row, in the empty slot between Sheephead (x=0.30)
+    // and Seabass (x=0.70). No upward nudge — that previously collided with
+    // Sea Lion on L4 above.
+    node.style.top = (tierY[3] * 100) + '%';
+
+    const sil = document.createElement('div');
+    sil.className = 'silhouette';
+    sil.appendChild(makeTNOSilhouette('otter'));
+    node.appendChild(sil);
+
+    const common = document.createElement('div');
+    common.className = 'common';
+    common.textContent = 'otter';
+    node.appendChild(common);
+
+    const latin = document.createElement('div');
+    latin.className = 'latin';
+    latin.textContent = 'Enhydra lutris';
+    node.appendChild(latin);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const tier = document.createElement('span');
+    tier.className = 'tier';
+    tier.textContent = 'extirpated';
+    meta.appendChild(tier);
+    const pop = document.createElement('span');
+    pop.className = 'pop';
+    pop.textContent = '00';
+    meta.appendChild(pop);
+    node.appendChild(meta);
+
+    const cb1 = document.createElement('span'); cb1.className = 'cb1';
+    const cb2 = document.createElement('span'); cb2.className = 'cb2';
+    node.appendChild(cb1); node.appendChild(cb2);
+
+    let popEl = null;
+    node.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (popEl) { popEl.remove(); popEl = null; return; }
+      popEl = document.createElement('div');
+      popEl.className = 'otter-pop';
+      popEl.style.left = '50%';
+      popEl.style.top = node.style.top;
+      popEl.innerHTML = '<strong>† Sea otter · the missing keystone</strong>' +
+        '<div class="body">Southern sea otters once kept urchins in check along the Catalina coast. ' +
+        '<em>Hunted to local extinction by 1850s</em> for the fur trade. Today the niche is partly filled by ' +
+        'sheephead and lobster — but those predators are also depleted, leaving the kelp forest fragile.</div>';
+      stage.appendChild(popEl);
+      // dismiss on outside click
+      setTimeout(() => {
+        const dismiss = (ev) => {
+          if (popEl && !popEl.contains(ev.target) && ev.target !== node && !node.contains(ev.target)) {
+            popEl.remove(); popEl = null;
+            document.removeEventListener('click', dismiss);
+          }
+        };
+        document.addEventListener('click', dismiss);
+      }, 0);
+    });
+
+    stage.appendChild(node);
+  }
+
+  function drawFoodWebEdges() {
+    const svg = document.getElementById('fwSvg');
+    if (!svg) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    fwEdges.length = 0;
+
+    const W = 800, H = 380;
+    const HALF_W = 12, HALF_H = 22;
+
+    // shared arrowhead glyph definition
+    const defs = document.createElementNS(SVG_NS, 'defs');
+    svg.appendChild(defs);
+
+    FW_EDGES.forEach((e, idx) => {
+      const a = fwNodes[e.from], b = fwNodes[e.to];
+      if (!a || !b) return;
+      const x1 = a.x * W, y1 = a.y * H - HALF_H;
+      const x2 = b.x * W, y2 = b.y * H + HALF_H;
+      const midY = (y1 + y2) / 2;
+
+      const path = document.createElementNS(SVG_NS, 'path');
+      const d = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', 'rgba(124, 168, 192, 0.35)');
+      path.setAttribute('stroke-width', '1');
+      path.setAttribute('vector-effect', 'non-scaling-stroke');
+      path.setAttribute('id', 'fwPath_' + idx);
+      path.dataset.from = e.from;
+      path.dataset.to = e.to;
+      svg.appendChild(path);
+
+      // flow markers — large, easy-to-read chevrons that travel slowly along the path.
+      // Each edge gets two staggered chevrons so the direction is unambiguous.
+      const makeChevron = () => {
+        const g = document.createElementNS(SVG_NS, 'g');
+        const halo = document.createElementNS(SVG_NS, 'polygon');
+        halo.setAttribute('points', '-9,-8 11,0 -9,8 -4,0');
+        halo.setAttribute('fill', '#a8e8c8');
+        halo.setAttribute('opacity', '0.18');
+        g.appendChild(halo);
+        const head = document.createElementNS(SVG_NS, 'polygon');
+        head.setAttribute('points', '-7,-6 9,0 -7,6 -3,0');
+        head.setAttribute('fill', '#a8e8c8');
+        head.setAttribute('stroke', '#0a0a0d');
+        head.setAttribute('stroke-width', '0.8');
+        head.setAttribute('stroke-linejoin', 'round');
+        g.appendChild(head);
+        g.__halo = halo;
+        g.__head = head;
+        g.setAttribute('opacity', '0');
+        svg.appendChild(g);
+        return g;
+      };
+      const marker  = makeChevron();
+      const marker2 = makeChevron();
+
+      let len = 0;
+      try { len = path.getTotalLength(); } catch (_) {}
+
+      fwEdges.push({
+        from: e.from, to: e.to, path, marker, marker2, len,
+        phase: Math.random(), pressure: 0
+      });
+    });
+  }
+
+  // pressure model: predation flux ≈ prey_pop * predator_pop, normalized to (eq×eq)
+  // returns 0..1 (clamped at 1.5 if overpopulated)
+  function fwPressure(fromName, toName) {
+    const a = SPECIES[fromName], b = SPECIES[toName];
+    const flux = a.pop * b.pop;
+    const ref  = a.eq * b.eq;
+    if (ref === 0) return 0;
+    return Math.min(1.5, flux / ref);
+  }
+
+  function updateFoodWebFlow(now) {
+    if (!fwEdges.length) return;
+    const SPEED = 0.00005; // path-fraction per ms baseline (slower → easier to read)
+    fwEdges.forEach(edge => {
+      if (!edge.len) return;
+      const collapseFrom = SPECIES[edge.from].pop > 0 && SPECIES[edge.from].pop / SPECIES[edge.from].eq < 0.25;
+      const collapseTo   = SPECIES[edge.to].pop > 0   && SPECIES[edge.to].pop   / SPECIES[edge.to].eq   < 0.25;
+      const dead = SPECIES[edge.from].pop === 0 || SPECIES[edge.to].pop === 0;
+
+      // advance phase by speed * pressure (capped so high pressure doesn't blur the chevron)
+      const pressureMul = 0.5 + Math.min(1.2, edge.pressure) * 0.9;
+      const speed = SPEED * pressureMul;
+      edge.phase = (edge.phase + speed * 16) % 1;
+
+      const place = (poly, t) => {
+        if (dead || edge.pressure < 0.05) { poly.setAttribute('opacity', '0'); return; }
+        const pt = edge.path.getPointAtLength(t * edge.len);
+        const ahead = edge.path.getPointAtLength(Math.min(edge.len, t * edge.len + 1));
+        const ang = Math.atan2(ahead.y - pt.y, ahead.x - pt.x) * 180 / Math.PI;
+        poly.setAttribute('transform', `translate(${pt.x} ${pt.y}) rotate(${ang})`);
+        const col = (collapseFrom || collapseTo) ? '#d44c40' : '#a8e8c8';
+        if (poly.__head) poly.__head.setAttribute('fill', col);
+        if (poly.__halo) poly.__halo.setAttribute('fill', col);
+        const fade = Math.min(1, t * 6, (1 - t) * 6);
+        poly.setAttribute('opacity', String(fade));
+      };
+
+      place(edge.marker,  edge.phase);
+      place(edge.marker2, (edge.phase + 0.5) % 1);
+    });
+  }
+
+  function updateFoodWebPops() {
+    Object.keys(SPECIES).forEach(name => {
+      const el = document.getElementById('fwPop_' + name);
+      if (el) el.textContent = String(Math.round(SPECIES[name].pop)).padStart(2, '0');
+      const node = fwNodes[name] && fwNodes[name].el;
+      if (node) {
+        const ratio = SPECIES[name].pop / SPECIES[name].eq;
+        node.classList.toggle('dim', SPECIES[name].pop === 0);
+        node.classList.toggle('collapse', ratio < 0.25 && SPECIES[name].pop > 0);
+      }
+    });
+    // recompute pressures + edge styling
+    fwEdges.forEach(edge => {
+      const p = fwPressure(edge.from, edge.to);
+      edge.pressure = p;
+      const collapseFrom = SPECIES[edge.from].pop > 0 && SPECIES[edge.from].pop / SPECIES[edge.from].eq < 0.25;
+      const collapseTo   = SPECIES[edge.to].pop > 0   && SPECIES[edge.to].pop   / SPECIES[edge.to].eq   < 0.25;
+      const dead = SPECIES[edge.from].pop === 0 || SPECIES[edge.to].pop === 0;
+
+      const w = dead ? 0.5 : (0.7 + p * 2.6); // 0.7..3.3
+      let stroke;
+      if (dead) stroke = 'rgba(124,168,192,0.12)';
+      else if (collapseFrom || collapseTo) stroke = 'rgba(212,76,64,0.65)';
+      else stroke = `rgba(168,232,200,${0.25 + p * 0.4})`;
+
+      edge.path.setAttribute('stroke-width', String(w));
+      edge.path.setAttribute('stroke', stroke);
+      edge.path.setAttribute('stroke-dasharray', dead ? '3 3' : '');
+    });
+  }
+
+  // hover: highlight edges touching a node
+  function fwHoverHandlers() {
+    Object.keys(fwNodes).forEach(name => {
+      const el = fwNodes[name].el;
+      el.addEventListener('mouseenter', () => fwHighlight(name));
+      el.addEventListener('mouseleave', () => fwHighlight(null));
+    });
+  }
+  function fwHighlight(focus) {
+    fwEdges.forEach(edge => {
+      const involved = !focus || edge.from === focus || edge.to === focus;
+      edge.path.style.opacity = involved ? '1' : '0.18';
+      edge.marker.style.opacity = involved ? '' : '0.18';
+      edge.marker2.style.opacity = involved ? '' : '0.18';
+    });
+    Object.keys(fwNodes).forEach(name => {
+      const involved = !focus || name === focus
+        || fwEdges.some(e => (e.from === focus && e.to === name) || (e.to === focus && e.from === name));
+      fwNodes[name].el.style.opacity = involved ? '1' : '0.4';
+    });
+  }
+
+  // event modifiers — these multiply or override system rates
+  const DEFAULT_MODS = {
+    kelpGrowth: 1.0,
+    urchinGrowth: 1.0,
+    predatorSurvival: 1.0,
+    coolingForcer: 0.0    // counters warming
+  };
+
+  let mods = Object.assign({}, DEFAULT_MODS);
+  let ticks = 0;
+  let history = { kelp:[], urchin:[], sheephead:[], seabass:[], sealion:[], lobster:[] };
+  let currentEvent = null;   // the active disruption key
+  let currentFix = null;     // the active intervention key
+  let warmingStress = 0;     // accumulator for thermal anomaly
+  let round = 1;
+  let stableTicks = 0;       // counts how long we've been near equilibrium
+
+  /* -------- bar + legend rendering (replaces token dots) -------- */
+  // remember last visible value to animate delta
+  let lastVisible = {};
+
+  function renderBars() {
+    Object.keys(SPECIES).forEach(name => {
+      const sp = SPECIES[name];
+      const visible = Math.round(sp.pop);
+      const pct = Math.max(0, Math.min(100, (sp.pop / sp.max) * 100));
+      const eqPct = (sp.eq / sp.max) * 100;
+
+      const valEl = document.getElementById('val-' + name);
+      const fillEl = document.getElementById('fill-' + name);
+      const eqEl = document.getElementById('eq-' + name);
+      const legEl = document.getElementById('leg-' + name);
+      const deltaEl = document.getElementById('delta-' + name);
+
+      if (valEl) valEl.textContent = String(visible).padStart(2, '0');
+      if (fillEl) fillEl.style.width = pct.toFixed(1) + '%';
+      if (eqEl) eqEl.style.left = eqPct.toFixed(1) + '%';
+      if (legEl) legEl.textContent = visible;
+
+      // delta vs equilibrium — using % deviation
+      if (deltaEl) {
+        const dev = Math.round(((sp.pop - sp.eq) / sp.eq) * 100);
+        if (Math.abs(dev) < 6) {
+          deltaEl.textContent = '≈ EQ';
+          deltaEl.className = 'delta';
+        } else if (dev > 0) {
+          deltaEl.textContent = '+' + dev + '%';
+          deltaEl.className = 'delta up';
+        } else {
+          deltaEl.textContent = dev + '%';
+          deltaEl.className = 'delta dn';
+        }
+      }
+
+      lastVisible[name] = visible;
+    });
+    updateHealth();
+  }
+
+  /* CRT odometer for the health readout — renders an integer as a row of digit reels.
+     Each reel is a 0..9 column; we translate it to land on the target digit so the
+     change reads as a mechanical roll, with a brief CRT flicker layered on top. */
+  function renderHealthReel(target, value) {
+    // build reels lazily — first call sets up 3 digit slots (000..100)
+    const digits = String(Math.max(0, Math.min(999, Math.round(value)))).padStart(3, '0').split('');
+    if (target.childElementCount !== 3) {
+      target.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const reel = document.createElement('span');
+        reel.className = 'reel';
+        for (let n = 0; n <= 9; n++) {
+          const d = document.createElement('span');
+          d.textContent = String(n);
+          reel.appendChild(d);
+        }
+        target.appendChild(reel);
+      }
+    }
+    const reels = target.querySelectorAll('.reel');
+    let changed = false;
+    digits.forEach((d, i) => {
+      const want = parseInt(d, 10);
+      const cur = parseInt(reels[i].dataset.digit || '-1', 10);
+      if (cur !== want) {
+        reels[i].style.transform = `translateY(-${want * 22}px)`;
+        reels[i].dataset.digit = String(want);
+        changed = true;
+      }
+    });
+    if (changed) {
+      target.classList.remove('flicker');
+      // force reflow so the animation can re-trigger
+      void target.offsetWidth;
+      target.classList.add('flicker');
+    }
+  }
+
+  function updateHealth() {
+    // Health is dominated by KELP (the producer is what we want to protect),
+    // plus penalties when any predator class collapses below ~30% of its eq.
+    // Overshoots are cheap; collapses are expensive.
+    const kelpRatio = Math.min(1.2, SPECIES.kelp.pop / SPECIES.kelp.eq);
+    let kelpScore = clamp(kelpRatio * 100, 0, 110);
+    if (kelpRatio < 0.5) kelpScore *= 0.6; // kelp loss is catastrophic
+
+    // predator-collapse penalty (sheephead is keystone, weighted heaviest)
+    const collapsePenalty = (sp, weight) => {
+      const r = sp.pop / sp.eq;
+      if (r >= 0.5) return 0;
+      return (0.5 - r) * weight * 100;
+    };
+    const penalty =
+        collapsePenalty(SPECIES.sheephead, 0.6) +
+        collapsePenalty(SPECIES.lobster,   0.25) +
+        collapsePenalty(SPECIES.seabass,   0.18) +
+        collapsePenalty(SPECIES.sealion,   0.15);
+
+    // urchin overshoot — only matters if it's grazing kelp away
+    const urchinOvershoot = Math.max(0, (SPECIES.urchin.pop / SPECIES.urchin.eq) - 1.5);
+    const grazingPenalty = urchinOvershoot * 18;
+
+    const score = Math.max(0, Math.min(100, kelpScore - penalty - grazingPenalty));
+    const v = document.getElementById('healthVal');
+    const f = document.getElementById('healthFill');
+    const t = document.getElementById('healthTag');
+    if (!v) return;
+    renderHealthReel(v, score);
+    f.style.width = score + '%';
+    v.classList.remove('warn', 'bad');
+    t.classList.remove('warn', 'bad', 'good');
+    if (score >= 75) {
+      t.classList.add('good');
+      t.textContent = '▲ Web stable. All trophic links functioning.';
+    } else if (score >= 45) {
+      v.classList.add('warn');
+      t.classList.add('warn');
+      t.textContent = '◆ Stress detected. Cascade in progress.';
+    } else {
+      v.classList.add('bad');
+      t.classList.add('bad');
+      t.textContent = '▼ Critical. Ecosystem collapsing — intervene now.';
+    }
+  }
+
+  /* =========================================================
+     OCEAN CROSS-SECTION — agent-based view
+     Each species has a target population mirroring SPECIES[name].pop;
+     agents are spawned/decayed to match. Death = decay-to-particles.
+     ========================================================= */
+  const OCEAN_W = 800, OCEAN_H = 600;
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  // depth bands (where each species typically swims) — y range 0..600
+  const BANDS = {
+    sealion:   [25, 150],   // surface diver
+    seabass:   [130, 290],  // mid-water
+    sheephead: [220, 460],  // mid-bottom kelp forest
+    urchin:    [540, 562],  // benthic
+    lobster:   [540, 562],  // benthic
+    kelp:      [60, 555]    // anchored, grows up the column
+  };
+
+  // agent shape factories — each returns an SVG <g> with a stylized body
+  function makeAgentShape(name, color) {
+    const g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('class', 'organism');
+    const body = document.createElementNS(SVG_NS, 'g');
+    body.setAttribute('class', 'body');
+    g.appendChild(body);
+
+    if (name === 'kelp') {
+      // tall kelp stipe — long bowed line + many alternating blades + pneumatocysts
+      const stipe = document.createElementNS(SVG_NS, 'path');
+      stipe.setAttribute('stroke', 'rgba(168, 214, 184, 0.7)');
+      stipe.setAttribute('stroke-width', '1.3');
+      stipe.setAttribute('fill', 'none');
+      body.appendChild(stipe);
+      // many blades alternating sides going up
+      const height = 120 + Math.random() * 80; // total stipe height in svg units
+      const blades = Math.floor(height / 14);
+      for (let i = 0; i < blades; i++) {
+        const blade = document.createElementNS(SVG_NS, 'ellipse');
+        const yy = -i * (height / blades) - 10;
+        const side = (i % 2 === 0) ? -1 : 1;
+        blade.setAttribute('cx', side * 6);
+        blade.setAttribute('cy', yy);
+        blade.setAttribute('rx', 3 + Math.random() * 1.5);
+        blade.setAttribute('ry', 8 + Math.random() * 3);
+        blade.setAttribute('fill', 'url(#kelpFrond)');
+        blade.setAttribute('opacity', 0.55 + Math.random() * 0.25);
+        blade.setAttribute('transform', `rotate(${side * (15 + Math.random() * 15)} ${side * 6} ${yy})`);
+        body.appendChild(blade);
+        // pneumatocyst (gas bladder) at base of every other blade
+        if (i % 2 === 0 && i > 0) {
+          const pn = document.createElementNS(SVG_NS, 'circle');
+          pn.setAttribute('cx', side * 2);
+          pn.setAttribute('cy', yy + 2);
+          pn.setAttribute('r', '1.4');
+          pn.setAttribute('fill', '#a8d6b8');
+          pn.setAttribute('opacity', '0.65');
+          body.appendChild(pn);
+        }
+      }
+      // top floating tip
+      const top = document.createElementNS(SVG_NS, 'circle');
+      top.setAttribute('cx', '0');
+      top.setAttribute('cy', -height - 6);
+      top.setAttribute('r', '2.2');
+      top.setAttribute('fill', '#a8d6b8');
+      top.setAttribute('opacity', '0.8');
+      body.appendChild(top);
+      g.__height = height;
+      g.__stipe = stipe;
+    } else if (name === 'urchin' || name === 'sheephead' || name === 'seabass' || name === 'sealion' || name === 'lobster') {
+      // SONAR CONTACT — abstract tracker glyph, not a literal animal silhouette.
+      // Class glyph + alphanumeric ID + velocity vector + tracker brackets.
+      drawSonarContact(body, name, color);
+    }
+    return g;
+  }
+
+  // Draws an abstract sonar/HUD contact: glyph (class) + ID code + velocity vector + brackets.
+  // Sized by trophic level so apex predators read larger than producers' grazers.
+  // Coord system: contact origin at (0,0). Velocity vector points +X (forward).
+  function drawSonarContact(parent, name, color) {
+    const sp = SPECIES[name];
+    // size envelope per trophic class (larger = higher trophic level)
+    const sizes = {
+      urchin:    { r: 4.5,  vec: 5,  bx: 7,  by: 6 },
+      lobster:   { r: 5,    vec: 6,  bx: 8,  by: 7 },
+      sheephead: { r: 6,    vec: 9,  bx: 10, by: 8 },
+      seabass:   { r: 6.5,  vec: 10, bx: 10, by: 8 },
+      sealion:   { r: 8.5,  vec: 14, bx: 13, by: 11 }
+    };
+    const s = sizes[name];
+
+    // 1) PRIMARY GLYPH — different shape per class, drawn as filled sigil + outer ring
+    const ring = document.createElementNS(SVG_NS, 'circle');
+    ring.setAttribute('cx', '0'); ring.setAttribute('cy', '0');
+    ring.setAttribute('r', s.r + 1.5);
+    ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', color);
+    ring.setAttribute('stroke-width', '0.5');
+    ring.setAttribute('opacity', '0.45');
+    ring.setAttribute('stroke-dasharray', '1.5 1.2');
+    parent.appendChild(ring);
+
+    const glyph = document.createElementNS(SVG_NS, 'path');
+    let d = '';
+    const r = s.r;
+    if (sp.glyph === 'hex') {
+      // urchin — hexagon (grazer)
+      const pts = [];
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+        pts.push(`${Math.cos(a) * r} ${Math.sin(a) * r}`);
+      }
+      d = 'M ' + pts.join(' L ') + ' Z';
+    } else if (sp.glyph === 'star') {
+      // sheephead — keystone, drawn as 4-point star (rotated diamond)
+      d = `M 0 ${-r} L ${r*0.4} ${-r*0.4} L ${r} 0 L ${r*0.4} ${r*0.4} L 0 ${r} L ${-r*0.4} ${r*0.4} L ${-r} 0 L ${-r*0.4} ${-r*0.4} Z`;
+    } else if (sp.glyph === 'tri') {
+      // seabass — predator, forward-facing triangle
+      d = `M ${r} 0 L ${-r*0.7} ${-r*0.85} L ${-r*0.7} ${r*0.85} Z`;
+    } else if (sp.glyph === 'sq') {
+      // sealion — apex, square (largest, most distinctive)
+      d = `M ${-r} ${-r} L ${r} ${-r} L ${r} ${r} L ${-r} ${r} Z`;
+    } else if (sp.glyph === 'circ') {
+      // lobster — scavenger, dotted circle with crosshair
+      const c = document.createElementNS(SVG_NS, 'circle');
+      c.setAttribute('cx', '0'); c.setAttribute('cy', '0');
+      c.setAttribute('r', r);
+      c.setAttribute('fill', color);
+      c.setAttribute('opacity', '0.85');
+      parent.appendChild(c);
+      // inner crosshair
+      const ch = document.createElementNS(SVG_NS, 'path');
+      ch.setAttribute('d', `M ${-r*0.55} 0 L ${r*0.55} 0 M 0 ${-r*0.55} L 0 ${r*0.55}`);
+      ch.setAttribute('stroke', '#0a0a0d');
+      ch.setAttribute('stroke-width', '0.7');
+      parent.appendChild(ch);
+      d = '';
+    }
+    if (d) {
+      glyph.setAttribute('d', d);
+      glyph.setAttribute('fill', color);
+      glyph.setAttribute('opacity', '0.92');
+      parent.appendChild(glyph);
+      // sub-glyph mark for star (sheephead) — keystone star annotation
+      if (sp.glyph === 'star') {
+        const dot = document.createElementNS(SVG_NS, 'circle');
+        dot.setAttribute('cx', '0'); dot.setAttribute('cy', '0');
+        dot.setAttribute('r', '1.2');
+        dot.setAttribute('fill', '#0a0a0d');
+        parent.appendChild(dot);
+      }
+    }
+
+    // 2) VELOCITY VECTOR — short forward line, length encodes movement.
+    // (kept short here; agents that swim get a longer one via __vec on the el)
+    const vec = document.createElementNS(SVG_NS, 'line');
+    vec.setAttribute('x1', s.r + 1.5);
+    vec.setAttribute('y1', '0');
+    vec.setAttribute('x2', s.r + 1.5 + s.vec);
+    vec.setAttribute('y2', '0');
+    vec.setAttribute('stroke', color);
+    vec.setAttribute('stroke-width', '0.7');
+    vec.setAttribute('opacity', '0.7');
+    parent.appendChild(vec);
+    // small arrowhead tick
+    const tip = document.createElementNS(SVG_NS, 'path');
+    const tipX = s.r + 1.5 + s.vec;
+    tip.setAttribute('d', `M ${tipX - 1.2} -1.2 L ${tipX} 0 L ${tipX - 1.2} 1.2`);
+    tip.setAttribute('fill', 'none');
+    tip.setAttribute('stroke', color);
+    tip.setAttribute('stroke-width', '0.6');
+    tip.setAttribute('opacity', '0.7');
+    parent.appendChild(tip);
+
+    // 3) ID LABEL — alphanumeric track code below the glyph (centered so x-flip doesn't break it).
+    // Only show on larger contacts to avoid clutter.
+    if (name === 'sealion' || name === 'sheephead') {
+      const label = document.createElementNS(SVG_NS, 'text');
+      const id = (Math.floor(Math.random() * 90) + 10).toString();
+      label.setAttribute('x', '0');
+      label.setAttribute('y', s.r + 6);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('font-family', 'JetBrains Mono, monospace');
+      label.setAttribute('font-size', '4.8');
+      label.setAttribute('font-weight', '500');
+      label.setAttribute('fill', color);
+      label.setAttribute('opacity', '0.7');
+      label.setAttribute('letter-spacing', '0.5');
+      label.textContent = sp.code + '·' + id;
+      // counter the parent's x-flip so text reads correctly when dir = -1.
+      // we do this by re-applying scale(-1,1) when needed — handled at flip time isn't trivial,
+      // so we draw a non-flipping wrapper sibling: add a marker element the agent loop will reset.
+      label.setAttribute('data-no-flip', '1');
+      parent.appendChild(label);
+    }
+
+    // 4) TRACKER BRACKETS — corner [ ] markers
+    addBrackets(parent, s.bx, s.by, color);
+  }
+
+  // adds [ ] tracker brackets around an organism for HUD-look
+  function addBrackets(parent, w, h, color) {
+    const len = 2.2;
+    const o = 0.6;
+    const mk = (x, y, dx, dy) => {
+      const p = document.createElementNS(SVG_NS, 'path');
+      p.setAttribute('d', `M ${x + dx*len} ${y} L ${x} ${y} L ${x} ${y + dy*len}`);
+      p.setAttribute('stroke', color);
+      p.setAttribute('stroke-width', '0.6');
+      p.setAttribute('fill', 'none');
+      p.setAttribute('opacity', o);
+      parent.appendChild(p);
+    };
+    mk(-w, -h,  1,  1);
+    mk( w, -h, -1,  1);
+    mk(-w,  h,  1, -1);
+    mk( w,  h, -1, -1);
+  }
+
+  // each agent: { el, body, name, x, y, vx, vy, baseY, phase, swimAmp, swimSpeed, alive, born, dying, deathT }
+  const agents = { kelp:[], urchin:[], sheephead:[], seabass:[], sealion:[], lobster:[] };
+  let agentLayer, particleLayer;
+  const particles = []; // {el, x, y, vx, vy, life, maxLife, color}
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function spawnAgent(name) {
+    const sp = SPECIES[name];
+    const band = BANDS[name];
+    const el = makeAgentShape(name, sp.color);
+    let x, y;
+    if (name === 'kelp') {
+      // anchored near floor, distributed across width
+      x = rand(60, OCEAN_W - 60);
+      y = rand(545, 558);
+    } else if (name === 'urchin' || name === 'lobster') {
+      x = rand(50, OCEAN_W - 50);
+      y = rand(band[0], band[1]);
+    } else {
+      x = rand(40, OCEAN_W - 40);
+      y = rand(band[0], band[1]);
+    }
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    el.setAttribute('transform', `translate(${x} ${y}) scale(${dir} 1)`);
+    el.style.opacity = '0';
+    agentLayer.appendChild(el);
+
+    const a = {
+      el, name, x, y,
+      vx: (name === 'kelp' || name === 'urchin') ? 0 : dir * rand(0.25, 0.7),
+      vy: 0,
+      baseY: y,
+      dir,
+      phase: Math.random() * Math.PI * 2,
+      swimAmp: name === 'sealion' ? 8 : (name === 'kelp' ? 0 : (name === 'urchin' || name === 'lobster' ? 0.5 : 5)),
+      swimSpeed: rand(0.04, 0.09),
+      alive: true,
+      born: 0,             // 0..1, animates in
+      dying: false,
+      deathT: 0,
+      // grow value for kelp (used to scale based on a small variation)
+      scale: 0.8 + Math.random() * 0.5
+    };
+    agents[name].push(a);
+  }
+
+  function killAgent(name) {
+    // kill the most recently spawned (LIFO) — feels like a fresh death
+    const arr = agents[name];
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (arr[i].alive && !arr[i].dying) {
+        arr[i].dying = true;
+        arr[i].deathT = 0;
+        return;
+      }
+    }
+  }
+
+  function emitParticle(x, y, color) {
+    const p = document.createElementNS(SVG_NS, 'circle');
+    const r = rand(0.6, 1.6);
+    p.setAttribute('r', r);
+    p.setAttribute('fill', color);
+    p.setAttribute('cx', x);
+    p.setAttribute('cy', y);
+    p.style.opacity = '0.85';
+    particleLayer.appendChild(p);
+    particles.push({
+      el: p, x, y,
+      vx: rand(-0.5, 0.5),
+      vy: rand(-1.5, -0.3),  // drift upward slightly
+      life: 0,
+      maxLife: rand(60, 130),
+      r
+    });
+  }
+
+  function reconcileAgents() {
+    // for each species, target = round(pop). Spawn or kill to match.
+    Object.keys(SPECIES).forEach(name => {
+      const target = Math.max(0, Math.round(SPECIES[name].pop));
+      const arr = agents[name];
+      const live = arr.filter(a => a.alive && !a.dying).length;
+      if (live < target) {
+        const need = target - live;
+        for (let i = 0; i < need; i++) spawnAgent(name);
+      } else if (live > target) {
+        const over = live - target;
+        for (let i = 0; i < over; i++) killAgent(name);
+      }
+    });
+  }
+
+  // animation tick — runs at 60fps via rAF
+  let rafLast = 0;
+  function animate(t) {
+    const dt = Math.min(50, t - rafLast || 16);
+    rafLast = t;
+    const step = dt / 16; // normalize to ~60fps frames
+
+    // update agents
+    Object.keys(agents).forEach(name => {
+      const arr = agents[name];
+      for (let i = arr.length - 1; i >= 0; i--) {
+        const a = arr[i];
+
+        // birth animation
+        if (a.born < 1) a.born = Math.min(1, a.born + 0.04 * step);
+
+        // dying — decay to particles
+        if (a.dying) {
+          a.deathT += step;
+          // emit a particle every couple frames
+          if (a.deathT % 3 < step && a.deathT < 30) {
+            emitParticle(a.x + rand(-4, 4), a.y + rand(-4, 4), SPECIES[name].color);
+          }
+          // shrink + fade
+          const k = Math.max(0, 1 - a.deathT / 30);
+          a.el.style.opacity = String(k * 0.85);
+          a.el.querySelector('.body').setAttribute('transform', `scale(${k * a.scale})`);
+          if (a.deathT >= 30) {
+            // final particle burst
+            for (let j = 0; j < 4; j++) emitParticle(a.x + rand(-3, 3), a.y + rand(-3, 3), SPECIES[name].color);
+            agentLayer.removeChild(a.el);
+            arr.splice(i, 1);
+            continue;
+          }
+        } else {
+          // movement
+          if (name === 'kelp') {
+            // gentle sway
+            a.phase += 0.02 * step;
+            const sway = Math.sin(a.phase) * 2;
+            a.el.setAttribute('transform', `translate(${a.x + sway} ${a.y}) scale(${a.scale})`);
+          } else if (name === 'urchin' || name === 'lobster') {
+            // benthic crawl — very slow x drift
+            a.x += a.vx * 0.15 * step;
+            if (a.x < 30 || a.x > OCEAN_W - 30) a.vx *= -1;
+            a.phase += 0.05 * step;
+            const wob = Math.sin(a.phase) * 0.4;
+            a.el.setAttribute('transform', `translate(${a.x} ${a.y + wob}) scale(${a.dir * a.scale} ${a.scale})`);
+          } else {
+            // swimmers — sinusoidal vertical drift, horizontal cruise
+            a.x += a.vx * step;
+            a.phase += a.swimSpeed * step;
+            const yo = Math.sin(a.phase) * a.swimAmp;
+            a.y = a.baseY + yo;
+            // bounce off horizontal edges
+            if (a.x < 30) { a.vx = Math.abs(a.vx); a.dir = 1; }
+            if (a.x > OCEAN_W - 30) { a.vx = -Math.abs(a.vx); a.dir = -1; }
+            // sometimes shift baseY slowly within band
+            if (Math.random() < 0.005) {
+              const band = BANDS[name];
+              a.baseY = clamp(a.baseY + rand(-15, 15), band[0], band[1]);
+            }
+            a.el.setAttribute('transform', `translate(${a.x} ${a.y}) scale(${a.dir * a.scale} ${a.scale})`);
+            // counter-flip ID labels so text reads forward regardless of dir
+            if (a.dir < 0 && !a._labelFlipped) {
+              a.el.querySelectorAll('[data-no-flip]').forEach(n => {
+                n.setAttribute('transform', 'scale(-1,1)');
+              });
+              a._labelFlipped = true;
+            } else if (a.dir > 0 && a._labelFlipped) {
+              a.el.querySelectorAll('[data-no-flip]').forEach(n => n.removeAttribute('transform'));
+              a._labelFlipped = false;
+            }
+          }
+          a.el.style.opacity = String(a.born * 0.95);
+          // birth scale-up for non-kelp
+          if (a.born < 1 && name !== 'kelp') {
+            a.el.querySelector('.body').setAttribute('transform', `scale(${a.born})`);
+          } else if (a.born >= 1 && name !== 'kelp') {
+            a.el.querySelector('.body').setAttribute('transform', '');
+          }
+        }
+      }
+    });
+
+    // update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life += step;
+      p.x += p.vx * step;
+      p.y += p.vy * step;
+      p.vy += 0.005 * step; // gentle damping toward neutral
+      p.vx *= Math.pow(0.985, step);
+      const k = 1 - p.life / p.maxLife;
+      if (k <= 0) {
+        particleLayer.removeChild(p.el);
+        particles.splice(i, 1);
+        continue;
+      }
+      p.el.setAttribute('cx', p.x);
+      p.el.setAttribute('cy', p.y);
+      p.el.style.opacity = String(k * 0.85);
+    }
+
+    // marine snow — slow drift downward + lateral wobble
+    for (let i = snow.length - 1; i >= 0; i--) {
+      const s = snow[i];
+      s.drift += 0.02 * step;
+      s.y += s.vy * step;
+      s.x += (s.vx + Math.sin(s.drift) * 0.05) * step;
+      if (s.y > OCEAN_H + 4) {
+        snowLayer.removeChild(s.el);
+        snow.splice(i, 1);
+        continue;
+      }
+      s.el.setAttribute('cy', s.y);
+      s.el.setAttribute('cx', s.x);
+    }
+    // top up snow
+    if (snow.length < 90 && Math.random() < 0.25 * step) spawnSnow(-2);
+
+    // backdrop kelp sway
+    for (let i = 0; i < backdropFronds.length; i++) {
+      const f = backdropFronds[i];
+      f.__sway += f.__swayRate * step;
+      const dx = Math.sin(f.__sway) * 4;
+      f.setAttribute('transform', `translate(${f.__baseX + dx} ${f.__baseY})`);
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  // marine snow — slow drifting white-ish flecks, always present
+  const snow = []; // {el, x, y, vy, vx, r, life}
+  let snowLayer;
+
+  function spawnSnow(initialY) {
+    const x = rand(0, OCEAN_W);
+    const y = initialY != null ? initialY : -10;
+    const r = rand(0.3, 1.1);
+    const el = document.createElementNS(SVG_NS, 'circle');
+    el.setAttribute('cx', x); el.setAttribute('cy', y);
+    el.setAttribute('r', r);
+    el.setAttribute('fill', '#d4d0c0');
+    el.setAttribute('opacity', rand(0.18, 0.55));
+    snowLayer.appendChild(el);
+    snow.push({ el, x, y, vy: rand(0.10, 0.35), vx: rand(-0.05, 0.05), r, drift: Math.random() * Math.PI * 2 });
+  }
+
+  // kelp backdrop — many faint static-ish fronds for forest-density feel
+  function makeBackdropFrond(x, y, height, opacity) {
+    const g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('transform', `translate(${x} ${y})`);
+    g.setAttribute('opacity', opacity);
+    const stipe = document.createElementNS(SVG_NS, 'line');
+    stipe.setAttribute('x1', '0'); stipe.setAttribute('y1', '0');
+    stipe.setAttribute('x2', '0'); stipe.setAttribute('y2', -height);
+    stipe.setAttribute('stroke', 'rgba(168, 214, 184, 0.5)');
+    stipe.setAttribute('stroke-width', '1');
+    g.appendChild(stipe);
+    const blades = Math.floor(height / 16);
+    for (let i = 0; i < blades; i++) {
+      const yy = -i * (height / blades) - 8;
+      const side = (i % 2 === 0) ? -1 : 1;
+      const blade = document.createElementNS(SVG_NS, 'ellipse');
+      blade.setAttribute('cx', side * 5);
+      blade.setAttribute('cy', yy);
+      blade.setAttribute('rx', 2.5 + Math.random());
+      blade.setAttribute('ry', 7 + Math.random() * 3);
+      blade.setAttribute('fill', 'url(#kelpFrond)');
+      blade.setAttribute('opacity', '0.6');
+      blade.setAttribute('transform', `rotate(${side * 18} ${side * 5} ${yy})`);
+      g.appendChild(blade);
+    }
+    g.__sway = Math.random() * Math.PI * 2;
+    g.__swayRate = 0.005 + Math.random() * 0.01;
+    g.__baseX = x;
+    g.__baseY = y;
+    return g;
+  }
+  let backdropFronds = [];
+
+  function initOcean() {
+    agentLayer = document.getElementById('oceanAgents');
+    particleLayer = document.getElementById('oceanParticles');
+    snowLayer = document.getElementById('oceanSnow');
+
+    // populate kelp backdrop — fewer, more spread out so it reads as depth
+    const backdrop = document.getElementById('kelpBackdrop');
+    for (let i = 0; i < 14; i++) {
+      const x = rand(20, OCEAN_W - 20);
+      const y = rand(556, 562);
+      const h = rand(180, 360);
+      const op = rand(0.25, 0.55);
+      const f = makeBackdropFrond(x, y, h, op);
+      backdrop.appendChild(f);
+      backdropFronds.push(f);
+    }
+
+    // pre-seed marine snow across full water column so it's not empty at start
+    for (let i = 0; i < 90; i++) spawnSnow(rand(0, OCEAN_H));
+
+    // initial spawn at equilibrium
+    Object.keys(SPECIES).forEach(name => {
+      const n = Math.round(SPECIES[name].eq);
+      for (let i = 0; i < n; i++) {
+        spawnAgent(name);
+        const a = agents[name][agents[name].length - 1];
+        a.born = 1;
+      }
+    });
+    requestAnimationFrame(animate);
+  }
+
+  /* -------- simulation step --------
+     Each species follows logistic growth toward its own carrying capacity K
+     (≈ eq * 1.4) plus predator/prey coupling. The intrinsic logistic term
+     guarantees a stable rest point near eq even if predator pressure
+     temporarily vanishes — preventing runaway collapse.
+
+       dN/dt = r·N·(1 − N/K)·growthMod  +  prey_gain  −  predation
+  */
+  function step() {
+    const k  = SPECIES.kelp.pop;
+    const u  = SPECIES.urchin.pop;
+    const sh = SPECIES.sheephead.pop;
+    const sb = SPECIES.seabass.pop;
+    const sl = SPECIES.sealion.pop;
+    const lo = SPECIES.lobster.pop;
+
+    // intrinsic carrying capacities (slightly above eq so eq is reached under coupling)
+    const Kk  = 22, Ku = 14, Ksh = 11, Ksb = 8, Ksl = 5, Klo = 8;
+    // seed — only applies when there's an active intervention, so collapse is
+    // actually possible during the disruption phase.
+    const seedOn = currentFix ? 1 : 0;
+    const seed = (n, eq) => seedOn * 0.015 * eq * Math.exp(-n);
+
+    // KELP — logistic growth, grazed by urchins.
+    let dk = 0.14 * k * (1 - k / Kk) * mods.kelpGrowth
+           - 0.038 * u * (k / (k + 3))
+           + seed(k, SPECIES.kelp.eq);
+
+    // URCHIN — kelp-fed; predated by sheephead + lobster. Kun tuned so eq settles ≈ 9.
+    const Kun = Math.max(6, 0.7 * k + 2) * mods.urchinGrowth;
+    let du = 0.18 * u * (1 - u / Kun)
+           - 0.030 * sh * (u / (u + 5)) * mods.predatorSurvival
+           - 0.018 * lo * (u / (u + 5)) * mods.predatorSurvival
+           + seed(u, SPECIES.urchin.eq);
+
+    // SHEEPHEAD — predator with own logistic capacity; prey boost from urchins.
+    let dsh = 0.08 * sh * (1 - sh / Ksh) * mods.predatorSurvival
+            + 0.010 * sh * (u / (u + 6))
+            - 0.022 * sb * (sh / (sh + 4)) * mods.predatorSurvival
+            + seed(sh, SPECIES.sheephead.eq);
+
+    // LOBSTER — scavenger predator; prey boost from urchins.
+    let dlo = 0.08 * lo * (1 - lo / Klo) * mods.predatorSurvival
+            + 0.008 * lo * (u / (u + 6))
+            - 0.018 * sb * (lo / (lo + 4)) * mods.predatorSurvival
+            + seed(lo, SPECIES.lobster.eq);
+
+    // SEA BASS — high predator; eats sheephead + lobster.
+    let dsb = 0.07 * sb * (1 - sb / Ksb) * mods.predatorSurvival
+            + 0.012 * sb * ((sh + lo) / (sh + lo + 8))
+            - 0.020 * sl * (sb / (sb + 3)) * mods.predatorSurvival
+            + seed(sb, SPECIES.seabass.eq);
+
+    // SEA LION — apex; eats sea bass.
+    let dsl = 0.06 * sl * (1 - sl / Ksl) * mods.predatorSurvival
+            + 0.012 * sl * (sb / (sb + 4))
+            + seed(sl, SPECIES.sealion.eq);
+
+    // apply (clamp to display max)
+    SPECIES.kelp.pop      = clamp(k  + dk,  0, SPECIES.kelp.max);
+    SPECIES.urchin.pop    = clamp(u  + du,  0, SPECIES.urchin.max);
+    SPECIES.sheephead.pop = clamp(sh + dsh, 0, SPECIES.sheephead.max);
+    SPECIES.seabass.pop   = clamp(sb + dsb, 0, SPECIES.seabass.max);
+    SPECIES.sealion.pop   = clamp(sl + dsl, 0, SPECIES.sealion.max);
+    SPECIES.lobster.pop   = clamp(lo + dlo, 0, SPECIES.lobster.max);
+  }
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  /* -------- history graph -------- */
+  function pushHistory() {
+    Object.keys(SPECIES).forEach(name => {
+      history[name].push(SPECIES[name].pop);
+      if (history[name].length > 60) history[name].shift();
+    });
+    drawGraph();
+  }
+
+  function drawGraph() {
+    const W = 600, H = 280;
+    Object.keys(SPECIES).forEach(name => {
+      const arr = history[name];
+      const maxN = SPECIES[name].max;
+      const points = arr.map((v, i) => {
+        const x = (i / 59) * W;
+        const y = H - (v / maxN) * H;
+        return x.toFixed(1) + ',' + y.toFixed(1);
+      }).join(' ');
+      document.getElementById('line-' + name).setAttribute('points', points);
+    });
+  }
+
+  /* -------- event application -------- */
+  // Disruption events
+  function applyEvent(key) {
+    currentEvent = key;
+    currentFix = null;
+    document.querySelectorAll('.ec-btn.fix').forEach(b => { b.disabled = false; b.classList.remove('active'); });
+    warmingStress = 0;
+
+    if (key === 'urchin-spike') {
+      // sudden urchin boom + significantly reduced predation — long-lasting
+      SPECIES.urchin.pop = SPECIES.urchin.max;
+      SPECIES.sheephead.pop *= 0.4;
+      SPECIES.lobster.pop *= 0.5;
+      mods.urchinGrowth = 2.4;
+      mods.predatorSurvival = 0.55;
+      setStatus('alert', 'Urchin population spike. Grazing pressure on kelp critical.');
+    }
+    else if (key === 'predator-loss') {
+      // mass die-off across all predators
+      SPECIES.sheephead.pop *= 0.05;
+      SPECIES.seabass.pop *= 0.05;
+      SPECIES.sealion.pop *= 0.10;
+      SPECIES.lobster.pop *= 0.10;
+      mods.predatorSurvival = 0.20;
+      mods.urchinGrowth = 1.5;
+      setStatus('alert', 'Predator collapse detected. Trophic regulation lost.');
+    }
+    else if (key === 'warming') {
+      // chronic kelp stress + favors urchins
+      SPECIES.kelp.pop *= 0.6;
+      mods.kelpGrowth = 0.18;
+      mods.urchinGrowth = 1.6;
+      mods.predatorSurvival = 0.75;
+      setStatus('alert', 'Thermal anomaly. Producer growth suppressed.');
+    }
+  }
+
+  // Interventions
+  function applyFix(key) {
+    currentFix = key;
+
+    let fixedKey = '';
+    if (currentEvent === 'urchin-spike') {
+      if (key === 'protect') {
+        mods.predatorSurvival = 1.5;
+        mods.urchinGrowth = 0.95;
+        setStatus('fixed', 'Predator protections deployed. Web stabilizing.');
+      } else if (key === 'farm') {
+        mods.kelpGrowth = 1.6;
+        mods.urchinGrowth = 1.2;
+        setStatus('partial', 'Kelp farming buffers loss. Urchin pressure persists.');
+      } else if (key === 'pollution') {
+        mods.kelpGrowth = 1.1;
+        mods.urchinGrowth = 1.3;
+        setStatus('partial', 'Cleaner water; mismatch with grazer-driven event.');
+      }
+    }
+    else if (currentEvent === 'predator-loss') {
+      if (key === 'protect') {
+        mods.predatorSurvival = 1.8;
+        setStatus('fixed', 'Predator protections deployed. Recruitment resuming.');
+      } else if (key === 'farm') {
+        mods.kelpGrowth = 1.6;
+        setStatus('partial', 'Kelp refuge created; predators still depleted.');
+      } else if (key === 'pollution') {
+        mods.kelpGrowth = 1.1;
+        setStatus('partial', 'Habitat improved; missing predator pressure unresolved.');
+      }
+    }
+    else if (currentEvent === 'warming') {
+      if (key === 'protect') {
+        mods.predatorSurvival = 1.3;
+        mods.kelpGrowth = 0.45;
+        setStatus('partial', 'Predators shielded; thermal stress on kelp continues.');
+      } else if (key === 'farm') {
+        mods.kelpGrowth = 0.85;
+        setStatus('partial', 'Heat-tolerant cultivars deployed. Recovery slow.');
+      } else if (key === 'pollution') {
+        mods.kelpGrowth = 1.1;
+        mods.urchinGrowth = 1.0;
+        setStatus('fixed', 'Emissions cut. Thermal stress easing. System recovering.');
+      }
+    }
+  }
+
+  function setStatus(cls, msg) {
+    const el = document.getElementById('statusLine');
+    el.classList.remove('ok','alert','partial','fixed');
+    el.classList.add(cls);
+    el.textContent = msg;
+  }
+
+  /* -------- reset -------- */
+  function reset() {
+    Object.keys(SPECIES).forEach(name => {
+      SPECIES[name].pop = SPECIES[name].eq;
+      history[name] = [];
+    });
+    mods = Object.assign({}, DEFAULT_MODS);
+    currentEvent = null;
+    currentFix = null;
+    warmingStress = 0;
+    ticks = 0;
+    stableTicks = 0;
+    round = 1;
+    document.getElementById('roundNum').textContent = '01';
+    document.querySelectorAll('.ec-btn.uhoh').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.ec-btn.fix').forEach(b => { b.classList.remove('active'); b.disabled = true; });
+    setStatus('ok', 'System nominal. Populations within equilibrium ± 10%.');
+    renderBars();
+    reconcileAgents();
+    drawGraph();
+  }
+
+  /* -------- check for round completion -------- */
+  function checkStability() {
+    let nearEq = true;
+    Object.keys(SPECIES).forEach(name => {
+      const sp = SPECIES[name];
+      if (Math.abs(sp.pop - sp.eq) > sp.eq * 0.30) nearEq = false;
+    });
+    if (currentFix && nearEq) {
+      stableTicks++;
+      if (stableTicks > 30) {
+        round = Math.min(round + 1, 3);
+        document.getElementById('roundNum').textContent = String(round).padStart(2, '0');
+        stableTicks = -100; // prevent re-trigger
+      }
+    } else {
+      stableTicks = Math.max(0, stableTicks - 1);
+    }
+  }
+
+  /* -------- main loop -------- */
+  function loop() {
+    step();
+    pushHistory();
+    renderBars();
+    reconcileAgents();
+    checkStability();
+    updateFoodWebPops();
+    ticks++;
+    document.getElementById('tickDisplay').textContent = 'T+ ' + String(ticks).padStart(3, '0') + 's';
+  }
+
+  /* -------- event wiring -------- */
+  document.querySelectorAll('.ec-btn.uhoh').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ec-btn.uhoh').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyEvent(btn.dataset.uhoh);
+    });
+  });
+  document.querySelectorAll('.ec-btn.fix').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!currentEvent) return;
+      document.querySelectorAll('.ec-btn.fix').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFix(btn.dataset.fix);
+    });
+  });
+  document.getElementById('resetSim').addEventListener('click', reset);
+
+  /* -------- init -------- */
+  // pre-warm history
+  for (let i = 0; i < 60; i++) {
+    Object.keys(SPECIES).forEach(name => history[name].push(SPECIES[name].eq));
+  }
+  renderBars();
+  drawGraph();
+  initOcean();
+  buildFoodWeb();
+  updateFoodWebPops();
+  (function fwTick() {
+    updateFoodWebFlow(performance.now());
+    requestAnimationFrame(fwTick);
+  })();
+
+  // simulation runs at 1 second per tick
+  setInterval(loop, 1000);
+
+  /* ============================================================
+     LIFE FLAVOR — small human-feeling details that don't affect
+     the model. Self-contained so it's easy to remove later.
+     ============================================================ */
+
+  /* #4 — build hash + compiled time. Hash is deterministic-per-load
+     (looks like a real short git hash); compiled time is also stable
+     so the topbar doesn't twitch on every paint. */
+  (function buildStamp(){
+    const buildEl = document.getElementById('buildHash');
+    const compEl = document.getElementById('compiledMs');
+    if (buildEl) {
+      const hex = '0123456789abcdef';
+      let h = '';
+      for (let i = 0; i < 6; i++) h += hex[Math.floor(Math.random() * 16)];
+      buildEl.textContent = '04.29.26-' + h;
+    }
+    if (compEl) {
+      // 0.8s..2.4s, one decimal — feels like a real build time
+      const ms = (0.8 + Math.random() * 1.6).toFixed(1);
+      compEl.textContent = ms;
+    }
+  })();
+
+  /* #6 — Idle flavor text. When the simulator has been quiet for a
+     while (no event/fix and no recent status change), the status line
+     occasionally narrates ambient hydrophone-style observations.
+     Resets the moment anything real happens. */
+  const IDLE_LINES = [
+    'listening to hydrophone… biomass nominal.',
+    'thermocline holding at 14.2°C.',
+    'gull overhead — surface contact dismissed.',
+    'sheephead patrol passing tag station 03.',
+    'tide ebbing. visibility 18m.',
+    'kelp canopy refraction within tolerance.',
+    'urchin grazing rate steady at 0.04 g·m⁻²·s⁻¹.',
+    'ambient salinity 33.6 ppt.',
+    'distant boat motor — filtered.',
+    'no anomalies queued.'
+  ];
+  let lastUserStatusAt = performance.now();
+  const _origSetStatus = setStatus;
+  setStatus = function(cls, msg){
+    lastUserStatusAt = performance.now();
+    _origSetStatus(cls, msg);
+  };
+  function maybeIdleLine() {
+    const now = performance.now();
+    // only after 18s of quiet, and only when no event/fix is engaged
+    if (currentEvent || currentFix) return;
+    if (now - lastUserStatusAt < 18000) return;
+    const line = IDLE_LINES[Math.floor(Math.random() * IDLE_LINES.length)];
+    const el = document.getElementById('statusLine');
+    if (!el) return;
+    el.classList.remove('alert','partial','fixed');
+    el.classList.add('ok');
+    el.textContent = line;
+    lastUserStatusAt = now - 9000; // re-fire about every ~9–14s while idle
+  }
+  setInterval(maybeIdleLine, 4000 + Math.random() * 3000);
+
+  /* #7 — T+ event flavor. At specific tick milestones, drop a
+     human-feeling log line into status. These are one-shot per session. */
+  const T_FLAVORS = {
+    30:  { cls: 'ok', msg: 'shift change · operator: M. CHEN signed on.' },
+    75:  { cls: 'ok', msg: 'auto-calibration complete · sensors green.' },
+    120: { cls: 'ok', msg: 'coffee break · monitor unattended ☕' },
+    180: { cls: 'ok', msg: 'sunlight angle ↑ · caustics intensifying.' },
+    240: { cls: 'ok', msg: 'log saved to /atlas/runs/catalina_04.29.dat' },
+    360: { cls: 'ok', msg: 'shift change · operator: J. RIVERA signed on.' }
+  };
+  const _firedFlavors = new Set();
+  function maybeTickFlavor() {
+    if (currentEvent || currentFix) return;
+    const f = T_FLAVORS[ticks];
+    if (f && !_firedFlavors.has(ticks)) {
+      _firedFlavors.add(ticks);
+      _origSetStatus(f.cls, f.msg);
+      lastUserStatusAt = performance.now() - 6000; // let it sit ~12s before idle resumes
+    }
+  }
+  // poll on a short interval; tick advances once per second so 250ms is plenty
+  setInterval(maybeTickFlavor, 250);
+
+  /* #8 — Sea lion barks. Once in a while, a random sea lion agent
+     emits a "♪ ARK!" speech bubble that floats up and fades. Skipped
+     when there are no living sea lions. Tied to ocean SVG so it scales
+     with the cross-section. */
+  function seaLionBark() {
+    if (!agents.sealion || !agents.sealion.length) return;
+    const live = agents.sealion.filter(a => a.alive && !a.dying);
+    if (!live.length) return;
+    const a = live[Math.floor(Math.random() * live.length)];
+    const svg = document.getElementById('oceanSvg');
+    if (!svg) return;
+    const g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('transform', `translate(${a.x} ${a.y - 18})`);
+    g.setAttribute('opacity', '0');
+    const rect = document.createElementNS(SVG_NS, 'rect');
+    rect.setAttribute('x','-22'); rect.setAttribute('y','-9');
+    rect.setAttribute('width','44'); rect.setAttribute('height','13');
+    rect.setAttribute('fill','rgba(10,10,13,0.85)');
+    rect.setAttribute('stroke','#d24c40');
+    rect.setAttribute('stroke-width','0.6');
+    g.appendChild(rect);
+    const txt = document.createElementNS(SVG_NS, 'text');
+    txt.setAttribute('x','0'); txt.setAttribute('y','1');
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('font-family','IBM Plex Mono, monospace');
+    txt.setAttribute('font-size','7');
+    txt.setAttribute('fill','#d24c40');
+    txt.setAttribute('letter-spacing','0.14em');
+    txt.textContent = '♪ ARK!';
+    g.appendChild(txt);
+    svg.appendChild(g);
+    // float up + fade out
+    const t0 = performance.now();
+    function animBark(now){
+      const t = (now - t0) / 1400;
+      if (t >= 1) { svg.removeChild(g); return; }
+      const op = t < 0.15 ? (t/0.15) : (1 - (t-0.15)/0.85);
+      g.setAttribute('opacity', String(Math.max(0, op)));
+      g.setAttribute('transform', `translate(${a.x} ${a.y - 18 - t*22})`);
+      requestAnimationFrame(animBark);
+    }
+    requestAnimationFrame(animBark);
+  }
+  function scheduleNextBark(){
+    // 25–55s between barks, suppressed when alert active
+    const delay = 25000 + Math.random() * 30000;
+    setTimeout(() => {
+      if (!currentEvent || currentFix) seaLionBark();
+      scheduleNextBark();
+    }, delay);
+  }
+  scheduleNextBark();
+
+  /* #5 — Ghost otter hover: when the user hovers the ghost node in the
+     food web, a faint, dashed otter silhouette glides across the ocean
+     cross-section. It's a ghost — translucent, no collision, mid-water. */
+  let otterGhostBusy = false;
+  function summonOtterGhost(){
+    if (otterGhostBusy) return;
+    const svg = document.getElementById('oceanSvg');
+    if (!svg) return;
+    otterGhostBusy = true;
+
+    // Cute cartoon otter — back-floating pose, paws clasped on chest holding
+    // a tiny urchin (rest in peace, keystone). Drawn as dashed-outline ghost
+    // in amber. All shapes carefully proportioned; coord origin = body center.
+    const g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('opacity','0');
+
+    const STROKE = 'rgba(232,169,72,0.65)';
+    const FILL   = 'rgba(232,169,72,0.10)';
+    const DARK   = 'rgba(232,169,72,0.85)';
+
+    function ghostPath(d, opts){
+      const p = document.createElementNS(SVG_NS, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('fill', opts.fill || FILL);
+      p.setAttribute('stroke', opts.stroke || STROKE);
+      p.setAttribute('stroke-width', opts.sw || '0.7');
+      if (opts.dash !== false) p.setAttribute('stroke-dasharray', opts.dash || '3 2');
+      p.setAttribute('stroke-linejoin','round');
+      p.setAttribute('stroke-linecap','round');
+      g.appendChild(p);
+      return p;
+    }
+    function ghostCircle(cx, cy, r, opts){
+      const c = document.createElementNS(SVG_NS, 'circle');
+      c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+      c.setAttribute('fill', opts.fill || FILL);
+      c.setAttribute('stroke', opts.stroke || STROKE);
+      c.setAttribute('stroke-width', opts.sw || '0.7');
+      if (opts.dash) c.setAttribute('stroke-dasharray', opts.dash);
+      g.appendChild(c);
+      return c;
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // GHOST SEA OTTER — CHIBI cartoon style. Front-ish 3/4 view of an
+    // otter floating on its back, looking up at the viewer. Big round
+    // head, huge sparkly eyes, tiny pebble paws, blob hind feet poking
+    // up. Designed to read as ADORABLE first, otter second.
+    //
+    // Coordinate system (origin = chest center, "up" = -y, mirror axis
+    // is x = 0 — but the whole creature is tilted ~10° for charm):
+    //   • TAIL: short curl trailing bottom-right (under the surface)
+    //   • BODY: round egg, mostly hidden behind belly fluff
+    //   • BELLY FLUFF: big oval cresting up — dominant silhouette
+    //   • TWO HIND FEET: little jellybean blobs poking up bottom-left
+    //   • TWO PAWS: tiny mittens on the belly, clasped around urchin
+    //   • URCHIN: purple star nestled on belly
+    //   • HEAD: GIANT round head on top, taking up ~40% of the silhouette
+    //     - ENORMOUS round eyes with white shines
+    //     - tiny heart-shaped nose
+    //     - tiny ":3" smile
+    //     - small fluffy ear tufts on top
+    //     - whisker dots (3 on each cheek)
+    // ──────────────────────────────────────────────────────────────────
+
+    const FAINT  = 'rgba(232,169,72,0.30)';
+    const BELLY  = 'rgba(232,169,72,0.18)';
+    const SHINE  = 'rgba(255, 240, 210, 0.95)';   // eye shine highlight
+
+    // Tilt the whole otter 8° clockwise for a casual, off-axis pose.
+    const otter = document.createElementNS(SVG_NS, 'g');
+    otter.setAttribute('transform', 'rotate(8)');
+    g.appendChild(otter);
+    function oPath(d, opts){
+      opts = opts || {};
+      const p = document.createElementNS(SVG_NS, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('fill', opts.fill || FILL);
+      p.setAttribute('stroke', opts.stroke || STROKE);
+      p.setAttribute('stroke-width', opts.sw || '0.75');
+      if (opts.dash !== false) p.setAttribute('stroke-dasharray', opts.dash || '3 2');
+      p.setAttribute('stroke-linejoin','round');
+      p.setAttribute('stroke-linecap','round');
+      otter.appendChild(p);
+      return p;
+    }
+    function oCircle(cx, cy, r, opts){
+      opts = opts || {};
+      const c = document.createElementNS(SVG_NS, 'circle');
+      c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+      c.setAttribute('fill', opts.fill || FILL);
+      c.setAttribute('stroke', opts.stroke || STROKE);
+      c.setAttribute('stroke-width', opts.sw || '0.75');
+      if (opts.dash !== false && opts.dash !== undefined) c.setAttribute('stroke-dasharray', opts.dash);
+      otter.appendChild(c);
+      return c;
+    }
+
+    // ── 1) TAIL — short curl peeking out at bottom-right of body ──────
+    oPath(
+      'M 14 18 Q 22 20, 26 16 Q 28 14, 26 12 Q 22 14, 18 14 Z',
+      { sw: '0.7' }
+    );
+
+    // ── 2) BODY EGG — round chibi torso (mostly hidden by belly fluff)─
+    oPath(
+      'M -16 8 ' +
+      'C -18 0, -14 -6, -6 -7 ' +     // upper-left curve into chest
+      'C 6 -8, 16 -4, 18 4 ' +         // upper-right + right side
+      'C 20 14, 14 20, 4 21 ' +        // bottom-right hip
+      'C -8 22, -16 18, -16 8 Z',     // bottom + back to start
+      { sw: '0.95' }
+    );
+
+    // ── 3) BELLY FLUFF — big pale oval cresting above the body ────────
+    // The defining cute element — pale tummy facing the camera.
+    oPath(
+      'M -12 6 ' +
+      'C -14 -2, -8 -6, 0 -6 ' +
+      'C 10 -6, 16 0, 14 8 ' +
+      'C 12 16, 4 18, -4 18 ' +
+      'C -12 18, -14 12, -12 6 Z',
+      { fill: BELLY, stroke: 'rgba(232,169,72,0.55)', sw: '0.6', dash: '2 1.5' }
+    );
+
+    // ── 4) HIND FEET — TWO blob jellybeans poking up bottom-left ──────
+    // Far foot (behind, smaller)
+    oPath(
+      'M -20 14 Q -26 10, -27 14 Q -27 19, -22 19 Q -19 19, -20 14 Z',
+      { sw: '0.75' }
+    );
+    // Three tiny toe-bean dots on far foot
+    oCircle(-25, 12.5, 0.8, { fill: STROKE, stroke: STROKE, sw: '0.2' });
+    oCircle(-26.5, 14.5, 0.8, { fill: STROKE, stroke: STROKE, sw: '0.2' });
+    oCircle(-25, 17, 0.8, { fill: STROKE, stroke: STROKE, sw: '0.2' });
+    // Near foot (in front, larger, tilts a bit)
+    oPath(
+      'M -16 17 Q -23 16, -25 21 Q -24 25, -19 25 Q -14 24, -14 20 Z',
+      { sw: '0.85' }
+    );
+    // toe-beans on near foot — bigger so they read
+    oCircle(-23.5, 19, 0.95, { fill: DARK, stroke: DARK, sw: '0.2' });
+    oCircle(-22, 22, 0.95, { fill: DARK, stroke: DARK, sw: '0.2' });
+    oCircle(-19, 23, 0.95, { fill: DARK, stroke: DARK, sw: '0.2' });
+
+    // ── 5) FRONT PAWS — two tiny mitten blobs on the belly ────────────
+    // Far paw (behind urchin)
+    oPath(
+      'M -3 4 Q -6 1, -3 -1 Q 1 -1, 1 3 Q -1 5, -3 4 Z',
+      { sw: '0.7' }
+    );
+    // Near paw (in front, larger)
+    oPath(
+      'M 2 4 Q 0 0, 4 -1 Q 8 0, 8 4 Q 6 6, 2 4 Z',
+      { sw: '0.8' }
+    );
+
+    // ── 6) URCHIN — purple star nestled in the paws ───────────────────
+    const urch = document.createElementNS(SVG_NS, 'g');
+    urch.setAttribute('transform','translate(2 -2)');
+    const urchBody = document.createElementNS(SVG_NS, 'circle');
+    urchBody.setAttribute('cx','0'); urchBody.setAttribute('cy','0');
+    urchBody.setAttribute('r','2.4');
+    urchBody.setAttribute('fill','rgba(168,116,200,0.65)');
+    urchBody.setAttribute('stroke', DARK);
+    urchBody.setAttribute('stroke-width','0.5');
+    urch.appendChild(urchBody);
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      const x1 = Math.cos(a) * 2, y1 = Math.sin(a) * 2;
+      const x2 = Math.cos(a) * 4, y2 = Math.sin(a) * 4;
+      const sp = document.createElementNS(SVG_NS, 'line');
+      sp.setAttribute('x1', x1.toFixed(2)); sp.setAttribute('y1', y1.toFixed(2));
+      sp.setAttribute('x2', x2.toFixed(2)); sp.setAttribute('y2', y2.toFixed(2));
+      sp.setAttribute('stroke', DARK);
+      sp.setAttribute('stroke-width','0.45');
+      sp.setAttribute('stroke-linecap','round');
+      urch.appendChild(sp);
+    }
+    // tiny urchin face — ":)" so it's adorable too
+    const uEye1 = document.createElementNS(SVG_NS,'circle');
+    uEye1.setAttribute('cx','-0.7'); uEye1.setAttribute('cy','-0.3'); uEye1.setAttribute('r','0.25');
+    uEye1.setAttribute('fill', '#0a0a0d');
+    urch.appendChild(uEye1);
+    const uEye2 = document.createElementNS(SVG_NS,'circle');
+    uEye2.setAttribute('cx','0.7'); uEye2.setAttribute('cy','-0.3'); uEye2.setAttribute('r','0.25');
+    uEye2.setAttribute('fill', '#0a0a0d');
+    urch.appendChild(uEye2);
+    otter.appendChild(urch);
+
+    // ── 7) HEAD — GIANT round chibi head, dominates the figure ────────
+    // Sits above the body, slightly tilted left for kawaii-pose.
+    const HX = -2, HY = -16;
+    const head = document.createElementNS(SVG_NS, 'g');
+    head.setAttribute('transform', `translate(${HX} ${HY}) rotate(-6)`);
+    otter.appendChild(head);
+    function hPath(d, opts){
+      opts = opts || {};
+      const p = document.createElementNS(SVG_NS, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('fill', opts.fill || FILL);
+      p.setAttribute('stroke', opts.stroke || STROKE);
+      p.setAttribute('stroke-width', opts.sw || '0.75');
+      if (opts.dash !== false) p.setAttribute('stroke-dasharray', opts.dash || '3 2');
+      p.setAttribute('stroke-linejoin','round');
+      p.setAttribute('stroke-linecap','round');
+      head.appendChild(p);
+      return p;
+    }
+    function hCircle(cx, cy, r, opts){
+      opts = opts || {};
+      const c = document.createElementNS(SVG_NS, 'circle');
+      c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+      c.setAttribute('fill', opts.fill || FILL);
+      c.setAttribute('stroke', opts.stroke || STROKE);
+      c.setAttribute('stroke-width', opts.sw || '0.75');
+      if (opts.dash !== false && opts.dash !== undefined) c.setAttribute('stroke-dasharray', opts.dash);
+      head.appendChild(c);
+      return c;
+    }
+
+    // EAR TUFTS — two little fluffy nubs on top of the head, BEFORE
+    // the skull so they sit behind it.
+    hPath('M -10 -10 Q -12 -14, -8 -14 Q -6 -13, -7 -10 Z', { sw: '0.7' });
+    hPath('M  10 -10 Q  12 -14,  8 -14 Q  6 -13,  7 -10 Z', { sw: '0.7' });
+
+    // SKULL — big round head circle (the dominant shape)
+    hPath(
+      'M -13 -2 ' +
+      'C -13 -10, -8 -14, 0 -14 ' +
+      'C 8 -14, 13 -10, 13 -2 ' +
+      'C 13 6, 8 9, 0 9 ' +
+      'C -8 9, -13 6, -13 -2 Z',
+      { sw: '1.0' }
+    );
+
+    // FACE PATCH — pale grizzled cheeks/chin oval (bottom 2/3 of face)
+    hPath(
+      'M -10 -1 C -10 -5, -5 -7, 0 -7 C 5 -7, 10 -5, 10 -1 ' +
+      'C 10 5, 5 8, 0 8 C -5 8, -10 5, -10 -1 Z',
+      { fill: BELLY, stroke: 'rgba(232,169,72,0.50)', sw: '0.45', dash: '2 1.5' }
+    );
+
+    // EYES — HUGE round sparkly eyes. The single biggest cuteness lever.
+    // Each eye = dark amber circle + bright white shine + smaller sub-shine.
+    // Left eye (otter's right, viewer's left)
+    hCircle(-5, -3, 2.6, { fill: DARK, stroke: DARK, sw: '0.4', dash: false });
+    hCircle(-4, -3.7, 0.95, { fill: SHINE, stroke: 'none', sw: '0' });
+    hCircle(-5.6, -2.3, 0.45, { fill: SHINE, stroke: 'none', sw: '0' });
+    // Right eye
+    hCircle( 5, -3, 2.6, { fill: DARK, stroke: DARK, sw: '0.4', dash: false });
+    hCircle( 6, -3.7, 0.95, { fill: SHINE, stroke: 'none', sw: '0' });
+    hCircle( 4.4, -2.3, 0.45, { fill: SHINE, stroke: 'none', sw: '0' });
+
+    // CHEEK BLUSH — soft pink-ish dots beneath each eye
+    hCircle(-7, 2, 1.6, { fill: 'rgba(232,140,140,0.30)', stroke: 'rgba(232,140,140,0.40)', sw: '0.3', dash: false });
+    hCircle( 7, 2, 1.6, { fill: 'rgba(232,140,140,0.30)', stroke: 'rgba(232,140,140,0.40)', sw: '0.3', dash: false });
+
+    // NOSE — tiny heart-shaped/triangle nose, centered between eyes
+    const nose = document.createElementNS(SVG_NS,'path');
+    nose.setAttribute('d', 'M -1.4 0.5 Q -1.8 -0.4, -0.6 -0.4 Q 0 0, 0.6 -0.4 Q 1.8 -0.4, 1.4 0.5 Q 0.7 1.4, 0 1.6 Q -0.7 1.4, -1.4 0.5 Z');
+    nose.setAttribute('fill', DARK);
+    nose.setAttribute('stroke', DARK);
+    nose.setAttribute('stroke-width','0.3');
+    nose.setAttribute('stroke-linejoin','round');
+    head.appendChild(nose);
+
+    // MOUTH — tiny ":3" smile under nose (two small curves meeting at center)
+    hPath('M -1.5 2.6 Q 0 4, 1.5 2.6',
+      { fill:'none', stroke: DARK, sw: '0.55', dash: false });
+    // little tongue dot for extra cute
+    hPath('M -0.4 3.3 Q 0 3.8, 0.4 3.3 L 0 3.5 Z',
+      { fill: 'rgba(232,140,140,0.55)', stroke: 'rgba(232,140,140,0.65)', sw: '0.2', dash: false });
+
+    // WHISKER DOTS — three tiny dots on each cheek (more chibi than lines)
+    [[-4, 1.8],[-5.5, 2.5],[-4.5, 3.2]].forEach(([x,y]) => {
+      hCircle(x, y, 0.35, { fill: DARK, stroke: DARK, sw: '0.15', dash: false });
+    });
+    [[4, 1.8],[5.5, 2.5],[4.5, 3.2]].forEach(([x,y]) => {
+      hCircle(x, y, 0.35, { fill: DARK, stroke: DARK, sw: '0.15', dash: false });
+    });
+
+    // ── 8) WATER RIPPLES — a few rings around the otter ───────────────
+    g.appendChild((() => {
+      const r = document.createElementNS(SVG_NS, 'g');
+      [['M -32 22 Q -16 26, 0 24 Q 16 22, 30 25', '0.45'],
+       ['M -28 28 Q -10 30, 8 28 Q 22 27, 32 30', '0.4']
+      ].forEach(([d, sw]) => {
+        const p = document.createElementNS(SVG_NS, 'path');
+        p.setAttribute('d', d);
+        p.setAttribute('fill','none');
+        p.setAttribute('stroke', FAINT);
+        p.setAttribute('stroke-width', sw);
+        p.setAttribute('stroke-dasharray','3 3');
+        p.setAttribute('stroke-linecap','round');
+        r.appendChild(p);
+      });
+      return r;
+    })());
+
+    // ── 7) DAGGER LABEL ────────────────────────────────────────────────
+    // Floats above the otter to identify the ghost.
+    const lbl = document.createElementNS(SVG_NS, 'text');
+    lbl.setAttribute('x','-2'); lbl.setAttribute('y','-22');
+    lbl.setAttribute('text-anchor','middle');
+    lbl.setAttribute('font-family','IBM Plex Mono, monospace');
+    lbl.setAttribute('font-size','5.5');
+    lbl.setAttribute('fill','rgba(232,169,72,0.7)');
+    lbl.setAttribute('letter-spacing','0.2em');
+    lbl.textContent = '† ENHYDRA · GHOST';
+    g.appendChild(lbl);
+
+    svg.appendChild(g);
+
+    // cross from left to right at mid-water depth, with gentle vertical wobble
+    const startX = -50, endX = OCEAN_W + 50;
+    const baseY = 240 + Math.random() * 60; // mid water
+    const t0 = performance.now();
+    const dur = 9000;
+    function animOtter(now){
+      const t = (now - t0) / dur;
+      if (t >= 1) { svg.removeChild(g); otterGhostBusy = false; return; }
+      const x = startX + (endX - startX) * t;
+      const y = baseY + Math.sin(t * Math.PI * 3) * 8;
+      g.setAttribute('transform', `translate(${x} ${y}) scale(1.6)`);
+      const op = t < 0.1 ? (t/0.1) : (t > 0.9 ? (1-t)/0.1 : 1);
+      g.setAttribute('opacity', String(op * 0.85));
+      requestAnimationFrame(animOtter);
+    }
+    requestAnimationFrame(animOtter);
+  }
+  // hook the ghost node, after buildFoodWeb has run
+  setTimeout(() => {
+    const ghost = document.querySelector('.fw-node.ghost');
+    if (ghost) {
+      ghost.addEventListener('mouseenter', summonOtterGhost);
+    }
+  }, 100);
+
+  /* #1 — Click a kelp frond → a nearby urchin nudges over and "grazes"
+     it. The frond loses a couple of blades (drift away as particles)
+     and the kelp pop drops by a tick. Pure flavor — model recovers. */
+  (function bindKelpNibble(){
+    const layer = document.getElementById('oceanAgents');
+    if (!layer) return;
+    layer.addEventListener('click', (ev) => {
+      // find the closest live kelp agent to the click point in svg coords
+      const svg = document.getElementById('oceanSvg');
+      const pt = svg.createSVGPoint();
+      pt.x = ev.clientX; pt.y = ev.clientY;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const local = pt.matrixTransform(ctm.inverse());
+      let best = null, bestD = Infinity;
+      // Kelp is a vertical stipe, not a point — each kelp agent extends from
+      // its anchor (y ≈ 550) up by `__height` (120–200 svg units). Hit-test
+      // any column within 12 units of the stipe x and within its y-range.
+      for (const a of agents.kelp) {
+        if (!a.alive || a.dying) continue;
+        const h = (a.el && a.el.__height) || 160;
+        const dx = Math.abs(a.x - local.x);
+        const yMin = a.y - h - 10;  // top of stipe
+        const yMax = a.y + 6;       // anchor
+        if (dx > 12) continue;
+        if (local.y < yMin || local.y > yMax) continue;
+        // pick the kelp whose stipe is closest in x
+        if (dx < bestD) { best = a; bestD = dx; }
+      }
+      if (!best) return;
+      // shake the kelp briefly + spawn a few drifting blade particles
+      const orig = best.scale;
+      let f = 0;
+      function shake(){
+        f++;
+        const k = Math.sin(f * 0.8) * 0.12 + 1;
+        best.scale = orig * k;
+        if (f < 12) requestAnimationFrame(shake);
+        else best.scale = orig;
+      }
+      shake();
+      for (let i = 0; i < 6; i++) {
+        emitParticle(best.x + (Math.random()-0.5)*8, best.y - 40 - Math.random()*60, '#a8d6b8');
+      }
+      // tiny status flavor — only if no event in progress
+      if (!currentEvent) {
+        _origSetStatus('ok', 'urchin grazing pulse logged · frond #' + (Math.floor(Math.random()*900)+100));
+        lastUserStatusAt = performance.now() - 12000;
+      }
+      // small kelp population dip — recovers naturally
+      SPECIES.kelp.pop = Math.max(0, SPECIES.kelp.pop - 0.3);
+    });
+  })();
+
+  /* ─────────────────────────────────────────────────────────────────
+     CONTACT-CLICK REACTIONS — clicking any live agent (other than kelp)
+     spawns a HUD-style speech bubble in the species' palette color,
+     with a randomized line that hints at its "personality." Some
+     species also get a small movement reaction (sea bass evades,
+     urchin radiates a sonar ping ring, lobster has a shell-flash).
+     All reactions are flavor — none affect the simulation model.
+     ───────────────────────────────────────────────────────────────── */
+  (function bindAgentClicks(){
+    const svg = document.getElementById('oceanSvg');
+    const layer = document.getElementById('oceanAgents');
+    if (!svg || !layer) return;
+
+    // species → bubble palette (border + text colors)
+    const PAL = {
+      sealion:   { stroke:'#d24c40', fill:'rgba(20,8,8,0.92)',   text:'#e88', accent:'#d24c40' },
+      seabass:   { stroke:'#7ca8c0', fill:'rgba(8,14,20,0.92)',  text:'#bde', accent:'#7ca8c0' },
+      sheephead: { stroke:'#e8a948', fill:'rgba(20,16,8,0.92)',  text:'#fc9', accent:'#e8a948' },
+      lobster:   { stroke:'#cf6a3a', fill:'rgba(20,10,6,0.92)',  text:'#f9b', accent:'#cf6a3a' },
+      urchin:    { stroke:'#a874c8', fill:'rgba(16,10,22,0.92)', text:'#dae', accent:'#a874c8' }
+    };
+
+    // dialogue lines per species — picked at random per click
+    const LINES = {
+      sealion: [
+        '♪ ARK!', '♪ ARK ARK!', '♪ rrrf rrrf', '♪ BARK BARK!',
+        '♪ AROOO', '♪ where lunch', '♪ honk', '♪ ARK ★'
+      ],
+      seabass: [
+        '[CONTACT EVADING]', '[BEARING 270°]', '[DEPTH +12m]',
+        '[NOT TODAY]', '[GHOST PROTOCOL]', '[CONTACT BREAKING]'
+      ],
+      sheephead: [
+        'KEYSTONE · TRK 04 · LOCKED',
+        'KEYSTONE · ID CONFIRMED',
+        'KEYSTONE · ESCORT ACTIVE',
+        'KEYSTONE · DO NOT DISTURB',
+        'KEYSTONE · TAGGED 04.12.26',
+        'KEYSTONE · PROTECTED STATUS'
+      ],
+      lobster: [
+        '[CONTACT TOO BUTTERY]',
+        '[CLAWS DEPLOYED · STAND BACK]',
+        '[MOLTING · DO NOT DISTURB]',
+        '[NOCTURNAL · WHY AM I AWAKE]',
+        '[UNACCEPTABLE LOBSTER]',
+        '[CRUSTACEAN GRUMBLES]',
+        '[1-IN-100M BLUE VARIANT]'  // rare — gated below
+      ],
+      urchin: [
+        '[STEPPED ON ME?!]',
+        '[BROKEN. BROKEN. GONE.]',
+        '[THIS GUY WAS DANCING ON ME]',
+        '[I MEAN JUST LOOK AT THIS]',
+        '[GRAZER · 47/m² · pri-ckly]',
+        '[SPINE INTEGRITY: ALLEGEDLY]'
+      ]
+    };
+
+    // pick a contextual line; lobster has a 5% blue-variant easter-egg
+    function pickLine(name){
+      if (name === 'lobster') {
+        if (Math.random() < 0.05) return { line:'[1-IN-100M BLUE VARIANT]', blue:true };
+        const pool = LINES.lobster.filter(l => l !== '[1-IN-100M BLUE VARIANT]');
+        return { line: pool[Math.floor(Math.random()*pool.length)], blue:false };
+      }
+      const arr = LINES[name];
+      return { line: arr[Math.floor(Math.random()*arr.length)], blue:false };
+    }
+
+    // estimate a HUD-bubble size from the line text (svg user units).
+    // font-size 6.5 + letter-spacing 0.10em ≈ 4.5 svg units per char.
+    function bubbleSize(text){
+      const w = Math.max(36, text.length * 4.5 + 10);
+      return { w, h: 13 };
+    }
+
+    // spawn a HUD speech bubble that floats up + fades. Anchored to a live
+    // agent so it tracks the agent's current x/y at spawn (no live-follow).
+    function spawnBubble(a, palOverride){
+      const pal = palOverride || PAL[a.name];
+      const picked = pickLine(a.name);
+      const sz = bubbleSize(picked.line);
+
+      const g = document.createElementNS(SVG_NS, 'g');
+      const ax = a.x, ay = a.y - 18;
+      g.setAttribute('transform', `translate(${ax} ${ay})`);
+      g.setAttribute('opacity','0');
+      g.setAttribute('pointer-events','none');
+
+      // bubble box
+      const rect = document.createElementNS(SVG_NS, 'rect');
+      rect.setAttribute('x', String(-sz.w/2));
+      rect.setAttribute('y', String(-sz.h/2 - 2));
+      rect.setAttribute('width', String(sz.w));
+      rect.setAttribute('height', String(sz.h));
+      rect.setAttribute('fill', pal.fill);
+      rect.setAttribute('stroke', pal.stroke);
+      rect.setAttribute('stroke-width','0.6');
+      g.appendChild(rect);
+
+      // corner ticks (HUD-style brackets)
+      const tk = (x, y, dx, dy) => {
+        const p = document.createElementNS(SVG_NS, 'path');
+        p.setAttribute('d', `M ${x+dx*1.5} ${y} L ${x} ${y} L ${x} ${y+dy*1.5}`);
+        p.setAttribute('stroke', pal.stroke);
+        p.setAttribute('stroke-width','0.5');
+        p.setAttribute('fill','none');
+        g.appendChild(p);
+      };
+      const hx = sz.w/2, hy = sz.h/2 + 2;
+      tk(-hx, -hy,  1,  1);
+      tk( hx, -hy, -1,  1);
+      tk(-hx,  hy,  1, -1);
+      tk( hx,  hy, -1, -1);
+
+      // caret tail pointing down at the agent
+      const caret = document.createElementNS(SVG_NS, 'path');
+      caret.setAttribute('d', `M -2 ${sz.h/2 - 2} L 0 ${sz.h/2 + 2} L 2 ${sz.h/2 - 2}`);
+      caret.setAttribute('fill', pal.fill);
+      caret.setAttribute('stroke', pal.stroke);
+      caret.setAttribute('stroke-width','0.5');
+      g.appendChild(caret);
+
+      // text
+      const txt = document.createElementNS(SVG_NS, 'text');
+      txt.setAttribute('x','0'); txt.setAttribute('y','1.5');
+      txt.setAttribute('text-anchor','middle');
+      txt.setAttribute('font-family','JetBrains Mono, IBM Plex Mono, monospace');
+      txt.setAttribute('font-size','6.5');
+      txt.setAttribute('fill', pal.stroke);
+      txt.setAttribute('letter-spacing','0.10em');
+      txt.textContent = picked.line;
+      g.appendChild(txt);
+
+      svg.appendChild(g);
+
+      // float up + fade — held long enough to read the full line
+      const dur = 3200;
+      const t0 = performance.now();
+      function anim(now){
+        const t = (now - t0) / dur;
+        if (t >= 1) { if (g.parentNode) svg.removeChild(g); return; }
+        // ramp in fast, hold ~70%, fade out at end
+        const op = t < 0.08 ? (t/0.08) : (t < 0.78 ? 1 : (1-t)/0.22);
+        g.setAttribute('opacity', String(Math.max(0, op)));
+        g.setAttribute('transform', `translate(${ax} ${ay - t*22})`);
+        requestAnimationFrame(anim);
+      }
+      requestAnimationFrame(anim);
+
+      return picked;
+    }
+
+    // urchin — radial sonar ping ring, expands outward and fades
+    function urchinPing(a){
+      const pal = PAL.urchin;
+      const ring = document.createElementNS(SVG_NS, 'circle');
+      ring.setAttribute('cx', a.x);
+      ring.setAttribute('cy', a.y);
+      ring.setAttribute('r', '3');
+      ring.setAttribute('fill','none');
+      ring.setAttribute('stroke', pal.stroke);
+      ring.setAttribute('stroke-width','0.6');
+      ring.setAttribute('stroke-dasharray','1.5 1.5');
+      ring.setAttribute('opacity','0.85');
+      ring.setAttribute('pointer-events','none');
+      svg.appendChild(ring);
+      const t0 = performance.now();
+      const dur = 900;
+      function anim(now){
+        const t = (now - t0)/dur;
+        if (t >= 1) { if (ring.parentNode) svg.removeChild(ring); return; }
+        ring.setAttribute('r', String(3 + t * 28));
+        ring.setAttribute('opacity', String(0.85 * (1-t)));
+        requestAnimationFrame(anim);
+      }
+      requestAnimationFrame(anim);
+    }
+
+    // sea bass — evade: flip dir + speed boost for ~1s, with a wake puff
+    function bassEvade(a){
+      a.dir = -a.dir;
+      a.vx = a.dir * 2.6; // burst
+      a.swimSpeed = 0.16;
+      // wake particles trailing behind the new heading
+      for (let i = 0; i < 5; i++) {
+        emitParticle(a.x - a.dir*4 + (Math.random()-0.5)*4, a.y + (Math.random()-0.5)*4, '#7ca8c0');
+      }
+      // restore after burst
+      setTimeout(() => {
+        if (!a.alive) return;
+        a.vx = a.dir * 0.6;
+        a.swimSpeed = 0.06;
+      }, 950);
+    }
+
+    // sheephead — keystone tracking brackets that grow around it for ~2s
+    function sheepheadLock(a){
+      const pal = PAL.sheephead;
+      const g = document.createElementNS(SVG_NS, 'g');
+      g.setAttribute('pointer-events','none');
+      const ticks = [];
+      // four corner brackets, will scale outward
+      const cornersData = [[-1,-1],[1,-1],[-1,1],[1,1]];
+      cornersData.forEach(([sx, sy]) => {
+        const p = document.createElementNS(SVG_NS, 'path');
+        // L-shape opening inward
+        const len = 2.6;
+        p.setAttribute('d', `M ${sx*-len} 0 L 0 0 L 0 ${sy*-len}`);
+        p.setAttribute('stroke', pal.stroke);
+        p.setAttribute('stroke-width','0.7');
+        p.setAttribute('fill','none');
+        p.setAttribute('opacity','0.85');
+        ticks.push({el:p, sx, sy});
+        g.appendChild(p);
+      });
+      svg.appendChild(g);
+      const t0 = performance.now();
+      const dur = 1800;
+      function anim(now){
+        const t = (now - t0)/dur;
+        if (t >= 1) { if (g.parentNode) svg.removeChild(g); return; }
+        // brackets grow from r=4 to r=12 then settle
+        const r = 4 + Math.min(t * 3.5, 1) * 8;
+        ticks.forEach(({el, sx, sy}) => {
+          el.setAttribute('transform', `translate(${a.x + sx*r} ${a.y + sy*r})`);
+        });
+        // pulse opacity
+        const pulse = 0.6 + Math.sin(t * Math.PI * 4) * 0.25;
+        g.setAttribute('opacity', String(pulse * (1 - Math.max(0, t-0.7)/0.3)));
+        requestAnimationFrame(anim);
+      }
+      requestAnimationFrame(anim);
+    }
+
+    // lobster — shell flash. On blue-variant, recolor body briefly.
+    function lobsterFlash(a, blue){
+      const orig = a.el.querySelector('.body circle');
+      if (blue && orig) {
+        const oldFill = orig.getAttribute('fill');
+        orig.setAttribute('fill','#5b9fd6');
+        setTimeout(() => { if (orig) orig.setAttribute('fill', oldFill); }, 1400);
+      }
+      // small shell-flash ring
+      const ring = document.createElementNS(SVG_NS, 'circle');
+      ring.setAttribute('cx', a.x); ring.setAttribute('cy', a.y);
+      ring.setAttribute('r','5');
+      ring.setAttribute('fill','none');
+      ring.setAttribute('stroke', blue ? '#5b9fd6' : '#cf6a3a');
+      ring.setAttribute('stroke-width','0.7');
+      ring.setAttribute('opacity','0.9');
+      ring.setAttribute('pointer-events','none');
+      svg.appendChild(ring);
+      const t0 = performance.now();
+      const dur = 600;
+      function anim(now){
+        const t = (now-t0)/dur;
+        if (t >= 1) { if (ring.parentNode) svg.removeChild(ring); return; }
+        ring.setAttribute('r', String(5 + t*8));
+        ring.setAttribute('opacity', String(0.9 * (1-t)));
+        requestAnimationFrame(anim);
+      }
+      requestAnimationFrame(anim);
+    }
+
+    // find nearest live agent to a click point (excluding kelp — handled separately above).
+    // Hit radius matches each species' visible glyph + brackets envelope so the
+    // contact "feels like" what's drawn. Vector tail (vec) is included since
+    // it's a visible part of the agent. Slight padding (+2) for forgiveness.
+    const HIT = {
+      urchin:    7,
+      lobster:   8,
+      sheephead: 18,  // bumped — small star glyph hard to hit
+      seabass:   18,  // bumped — small triangle glyph hard to hit
+      sealion:   16
+    };
+    function nearestAgent(localX, localY){
+      let best = null, bestRel = Infinity;
+      const candidates = ['sealion','seabass','sheephead','lobster','urchin'];
+      for (const name of candidates) {
+        const hit = HIT[name] + 2;
+        for (const a of agents[name]) {
+          if (!a.alive || a.dying) continue;
+          const d = Math.hypot(a.x - localX, a.y - localY);
+          if (d > hit) continue;
+          // normalize so a click 50% into one species' radius beats a click
+          // 80% into a larger species' radius — picks the "best fit" target.
+          const rel = d / hit;
+          if (rel < bestRel) { best = a; bestRel = rel; }
+        }
+      }
+      return best;
+    }
+
+    // Click handler — runs in CAPTURE phase BEFORE the kelp-nibble handler so
+    // we can claim clicks that land on a non-kelp contact. (Kelp clicks fall
+    // through and are picked up by the existing kelp handler.)
+    layer.addEventListener('click', (ev) => {
+      const pt = svg.createSVGPoint();
+      pt.x = ev.clientX; pt.y = ev.clientY;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const local = pt.matrixTransform(ctm.inverse());
+      const a = nearestAgent(local.x, local.y);
+      if (!a) return;
+      // claim the event so the kelp handler doesn't also fire
+      ev.stopPropagation();
+      // species-specific extra reactions
+      let palOverride = null;
+      if (a.name === 'seabass') bassEvade(a);
+      if (a.name === 'urchin')  urchinPing(a);
+      if (a.name === 'sheephead') sheepheadLock(a);
+      if (a.name === 'lobster') {
+        // peek bubble to know if this click rolled blue-variant
+        // (we re-roll inside spawnBubble — to keep them in sync, decide here)
+      }
+      const picked = spawnBubble(a, palOverride);
+      if (a.name === 'lobster') lobsterFlash(a, !!(picked && picked.blue));
+    }, true); // capture
+  })();
+</script>
 
 </body>
 </html>
