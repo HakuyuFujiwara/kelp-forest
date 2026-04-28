@@ -974,7 +974,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    min-height: 64px;
+    min-height: 80px;
     transition: border-color .12s ease, background .12s ease;
   }
   .ec-btn .lbl {
@@ -984,6 +984,18 @@
     color: var(--dim);
     font-weight: 500;
   }
+  .ec-btn .ref {
+    font-size: 9.5px;
+    color: var(--dim);
+    font-style: italic;
+    line-height: 1.3;
+    margin-top: 1px;
+    letter-spacing: 0.02em;
+    opacity: 0.78;
+  }
+  .ec-btn:hover:not(:disabled) .ref { color: var(--phos); opacity: 0.85; }
+  .ec-btn.uhoh.active .ref { color: var(--alert); opacity: 0.85; }
+  .ec-btn.fix.active .ref { color: var(--safe); opacity: 0.85; }
   .ec-btn:hover:not(:disabled) {
     border-color: var(--phos);
     color: var(--phos);
@@ -1035,6 +1047,78 @@
     font-weight: 500;
   }
   .reset-btn:hover { color: var(--txt); border-color: var(--txt); }
+
+  /* about modal */
+  .about-overlay {
+    position: fixed; inset: 0;
+    background: rgba(8, 12, 16, 0.78);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .about-overlay.open { display: flex; }
+  .about-modal {
+    max-width: 720px;
+    width: 100%;
+    max-height: 86vh;
+    overflow-y: auto;
+    background: var(--bg-soft);
+    border: 1px solid var(--line-2);
+    padding: 30px 34px 28px;
+    font-family: var(--mono);
+    color: var(--txt);
+    font-size: 12px;
+    line-height: 1.6;
+    position: relative;
+  }
+  .about-modal h2 {
+    font-size: 11px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--phos);
+    font-weight: 500;
+    margin: 0 0 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .about-modal h3 {
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 500;
+    margin: 18px 0 8px;
+  }
+  .about-modal p {
+    margin: 0 0 10px;
+    color: var(--txt);
+  }
+  .about-modal .muted { color: var(--dim); font-size: 11px; }
+  .about-modal ul {
+    margin: 0 0 10px; padding-left: 18px;
+    color: var(--txt);
+  }
+  .about-modal ul li { margin-bottom: 4px; }
+  .about-modal cite {
+    color: var(--dim);
+    font-style: italic;
+    font-size: 10.5px;
+  }
+  .about-close {
+    position: absolute;
+    top: 18px; right: 20px;
+    background: transparent;
+    border: 1px solid var(--line-2);
+    color: var(--dim);
+    width: 28px; height: 28px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1;
+  }
+  .about-close:hover { color: var(--txt); border-color: var(--txt); }
 
   /* play/pause indicator */
   .tick-indicator {
@@ -1481,14 +1565,17 @@
         <button class="ec-btn uhoh" data-uhoh="urchin-spike">
           <span class="lbl">Disruption 1</span>
           Urchin population spike
+          <span class="ref">↳ ref: 2014–present CA "urchin barrens"</span>
         </button>
         <button class="ec-btn uhoh" data-uhoh="predator-loss">
           <span class="lbl">Disruption 2</span>
           Predator collapse
+          <span class="ref">↳ ref: sea star wasting disease, 2013</span>
         </button>
         <button class="ec-btn uhoh" data-uhoh="warming">
           <span class="lbl">Disruption 3</span>
           Thermal anomaly
+          <span class="ref">↳ ref: NE Pacific marine heatwave, 2014–16</span>
         </button>
       </div>
 
@@ -1497,19 +1584,24 @@
         <button class="ec-btn fix" data-fix="protect" disabled>
           <span class="lbl">Intervention 1</span>
           Predator protection
+          <span class="ref">↳ ref: Marine Protected Areas (MPAs)</span>
         </button>
         <button class="ec-btn fix" data-fix="farm" disabled>
           <span class="lbl">Intervention 2</span>
           Kelp farming
+          <span class="ref">↳ ref: kelp restoration / outplanting</span>
         </button>
         <button class="ec-btn fix" data-fix="pollution" disabled>
           <span class="lbl">Intervention 3</span>
           Reduce emissions
+          <span class="ref">↳ ref: climate mitigation policy</span>
+        </button>
         </button>
       </div>
 
       <div class="console-foot">
         <span>Round <strong id="roundNum">01</strong> / 03</span>
+        <button class="reset-btn" id="aboutBtn" style="margin-right:auto;margin-left:14px;">ⓘ About this model</button>
         <button class="reset-btn" id="resetSim">↺ Reset simulation</button>
       </div>
     </div>
@@ -1597,12 +1689,12 @@
 
   // species config: max display tokens, initial population, colors
   const SPECIES = {
-    kelp:      { max: 24, eq: 18, pop: 18, color: '#88c4a0', code: 'KLP', glyph: null    },
-    urchin:    { max: 22, eq: 13, pop: 13, color: '#b48fd9', code: 'URC', glyph: 'hex'   },
-    sheephead: { max: 14, eq: 10, pop: 10, color: '#e8a948', code: 'SHP', glyph: 'star'  },
-    seabass:   { max: 12, eq: 8,  pop: 8,  color: '#7eb8d4', code: 'SBS', glyph: 'tri'   },
-    sealion:   { max: 8,  eq: 6,  pop: 6,  color: '#d24c40', code: 'SLN', glyph: 'sq'    },
-    lobster:   { max: 12, eq: 7,  pop: 7,  color: '#d49070', code: 'LBS', glyph: 'circ'  }
+    kelp:      { max: 40,  displayMax: 40,  eq: 31, pop: 31, color: '#88c4a0', code: 'KLP', glyph: null    },
+    urchin:    { max: 200, displayMax: 50,  eq: 26, pop: 26, color: '#b48fd9', code: 'URC', glyph: 'hex'   },
+    sheephead: { max: 24,  displayMax: 24,  eq: 17, pop: 17, color: '#e8a948', code: 'SHP', glyph: 'star'  },
+    seabass:   { max: 22,  displayMax: 22,  eq: 16, pop: 16, color: '#7eb8d4', code: 'SBS', glyph: 'tri'   },
+    sealion:   { max: 16,  displayMax: 16,  eq: 11, pop: 11, color: '#d24c40', code: 'SLN', glyph: 'sq'    },
+    lobster:   { max: 24,  displayMax: 24,  eq: 18, pop: 18, color: '#d49070', code: 'LBS', glyph: 'circ'  }
   };
 
   /* -------- FOOD WEB / VIEW.C -------- */
@@ -2393,6 +2485,7 @@
     kelpGrowth: 1.0,
     urchinGrowth: 1.0,
     predatorSurvival: 1.0,
+    grazingPressure: 1.0,
     coolingForcer: 0.0    // counters warming
   };
 
@@ -2412,9 +2505,10 @@
   function renderBars() {
     Object.keys(SPECIES).forEach(name => {
       const sp = SPECIES[name];
+      const displayMax = sp.displayMax || sp.max;
       const visible = Math.round(sp.pop);
-      const pct = Math.max(0, Math.min(100, (sp.pop / sp.max) * 100));
-      const eqPct = (sp.eq / sp.max) * 100;
+      const pct = Math.max(0, Math.min(100, (sp.pop / displayMax) * 100));
+      const eqPct = (sp.eq / displayMax) * 100;
 
       const valEl = document.getElementById('val-' + name);
       const fillEl = document.getElementById('fill-' + name);
@@ -2486,30 +2580,39 @@
   }
 
   function updateHealth() {
-    // Health is dominated by KELP (the producer is what we want to protect),
-    // plus penalties when any predator class collapses below ~30% of its eq.
-    // Overshoots are cheap; collapses are expensive.
-    const kelpRatio = Math.min(1.2, SPECIES.kelp.pop / SPECIES.kelp.eq);
-    let kelpScore = clamp(kelpRatio * 100, 0, 110);
-    if (kelpRatio < 0.5) kelpScore *= 0.6; // kelp loss is catastrophic
+    // Health = weighted average of every species' "ratio to eq", with sharp
+    // penalties for collapse OR overshoot. Every trophic level matters; no
+    // single species can mask collapse elsewhere.
+    const ratio = (sp) => sp.pop / sp.eq;
 
-    // predator-collapse penalty (sheephead is keystone, weighted heaviest)
-    const collapsePenalty = (sp, weight) => {
-      const r = sp.pop / sp.eq;
-      if (r >= 0.5) return 0;
-      return (0.5 - r) * weight * 100;
+    // bell-shaped score: 1.0 when at eq, 0 at zero, 0 at 2× eq
+    // f(r) = peaks at 1, falls fast outside [0.7, 1.3], floor at 0
+    const speciesScore = (sp) => {
+      const r = ratio(sp);
+      if (r <= 0.05) return 0;
+      // penalize collapse harder than overshoot
+      if (r < 1.0) return Math.max(0, r); // linear up to 1.0
+      // overshoot decays: r=1 → 1, r=1.5 → 0.7, r=2 → 0.4, r≥2.5 → ~0.1
+      return Math.max(0.1, 1.0 - (r - 1.0) * 0.6);
     };
-    const penalty =
-        collapsePenalty(SPECIES.sheephead, 0.6) +
-        collapsePenalty(SPECIES.lobster,   0.25) +
-        collapsePenalty(SPECIES.seabass,   0.18) +
-        collapsePenalty(SPECIES.sealion,   0.15);
 
-    // urchin overshoot — only matters if it's grazing kelp away
-    const urchinOvershoot = Math.max(0, (SPECIES.urchin.pop / SPECIES.urchin.eq) - 1.5);
-    const grazingPenalty = urchinOvershoot * 18;
+    // weighted by ecological importance (kelp = producer, sheephead = keystone)
+    const weights = {
+      kelp:      0.30,
+      urchin:    0.15,
+      sheephead: 0.20,
+      lobster:   0.10,
+      seabass:   0.13,
+      sealion:   0.12
+    };
 
-    const score = Math.max(0, Math.min(100, kelpScore - penalty - grazingPenalty));
+    let weighted = 0;
+    Object.keys(weights).forEach(name => {
+      weighted += weights[name] * speciesScore(SPECIES[name]);
+    });
+
+    // amplify so a perfectly-balanced web reads 100, mid-stress ~60, collapse <30
+    const score = Math.max(0, Math.min(100, weighted * 100));
     const v = document.getElementById('healthVal');
     const f = document.getElementById('healthFill');
     const t = document.getElementById('healthTag');
@@ -2832,8 +2935,13 @@
 
   function reconcileAgents() {
     // for each species, target = round(pop). Spawn or kill to match.
+    // visual cap = displayMax * 1.6 so the tank doesn't get overwhelmed
+    // when actual population spikes far above normal display range.
     Object.keys(SPECIES).forEach(name => {
-      const target = Math.max(0, Math.round(SPECIES[name].pop));
+      const sp = SPECIES[name];
+      const dispMax = sp.displayMax || sp.max;
+      const visualCap = Math.ceil(dispMax * 1.6);
+      const target = Math.max(0, Math.min(visualCap, Math.round(sp.pop)));
       const arr = agents[name];
       const live = arr.filter(a => a.alive && !a.dying).length;
       if (live < target) {
@@ -3061,12 +3169,12 @@
   }
 
   /* -------- simulation step --------
-     Each species follows logistic growth toward its own carrying capacity K
-     (≈ eq * 1.4) plus predator/prey coupling. The intrinsic logistic term
-     guarantees a stable rest point near eq even if predator pressure
-     temporarily vanishes — preventing runaway collapse.
+     Strict trophic coupling: each consumer's carrying capacity is a function
+     of its prey. Without prey, K → 0 and a starvation term drains the
+     population. This produces real cascade collapse: lose the producer and
+     every higher level fails in sequence.
 
-       dN/dt = r·N·(1 − N/K)·growthMod  +  prey_gain  −  predation
+       dN/dt = r·N·(1 − N/K(prey))·mod  −  predation  −  starvation
   */
   function step() {
     const k  = SPECIES.kelp.pop;
@@ -3076,8 +3184,9 @@
     const sl = SPECIES.sealion.pop;
     const lo = SPECIES.lobster.pop;
 
-    // intrinsic carrying capacities (slightly above eq so eq is reached under coupling)
-    const Kk  = 22, Ku = 14, Ksh = 11, Ksb = 8, Ksl = 5, Klo = 8;
+    // kelp is the only species with an environment-driven (not prey-driven)
+    // carrying capacity — it's a producer, fed by sun + nutrients.
+    const Kk = 35;
     // seed — only applies when there's an active intervention, so collapse is
     // actually possible during the disruption phase.
     const seedOn = currentFix ? 1 : 0;
@@ -3085,37 +3194,42 @@
 
     // KELP — logistic growth, grazed by urchins.
     let dk = 0.14 * k * (1 - k / Kk) * mods.kelpGrowth
-           - 0.038 * u * (k / (k + 3))
+           - 0.024 * u * (k / (k + 5)) * mods.grazingPressure
            + seed(k, SPECIES.kelp.eq);
 
-    // URCHIN — kelp-fed; predated by sheephead + lobster. Kun tuned so eq settles ≈ 9.
-    const Kun = Math.max(6, 0.7 * k + 2) * mods.urchinGrowth;
-    let du = 0.18 * u * (1 - u / Kun)
-           - 0.030 * sh * (u / (u + 5)) * mods.predatorSurvival
-           - 0.018 * lo * (u / (u + 5)) * mods.predatorSurvival
+    // URCHIN — capacity scales with kelp; without kelp, urchins starve.
+    const Kun = (0.95 * k + 0.8) * mods.urchinGrowth;
+    let du = 0.18 * u * (1 - u / Math.max(0.1, Kun))
+           - 0.022 * sh * (u / (u + 10)) * mods.predatorSurvival
+           - 0.014 * lo * (u / (u + 10)) * mods.predatorSurvival
+           - 0.06 * u * (3.5 / (k + 3.5))           // starvation when kelp is scarce
            + seed(u, SPECIES.urchin.eq);
 
-    // SHEEPHEAD — predator with own logistic capacity; prey boost from urchins.
-    let dsh = 0.08 * sh * (1 - sh / Ksh) * mods.predatorSurvival
-            + 0.010 * sh * (u / (u + 6))
-            - 0.022 * sb * (sh / (sh + 4)) * mods.predatorSurvival
+    // SHEEPHEAD — capacity scales with urchin.
+    const Ksh_dyn = 0.85 * u + 0.5;
+    let dsh = 0.08 * sh * (1 - sh / Math.max(0.1, Ksh_dyn)) * mods.predatorSurvival
+            - 0.016 * sb * (sh / (sh + 8)) * mods.predatorSurvival
+            - 0.05 * sh * (5.0 / (u + 5.0))         // starvation w/o urchins
             + seed(sh, SPECIES.sheephead.eq);
 
-    // LOBSTER — scavenger predator; prey boost from urchins.
-    let dlo = 0.08 * lo * (1 - lo / Klo) * mods.predatorSurvival
-            + 0.008 * lo * (u / (u + 6))
-            - 0.018 * sb * (lo / (lo + 4)) * mods.predatorSurvival
+    // LOBSTER — capacity scales with urchin.
+    const Klo_dyn = 0.85 * u + 0.5;
+    let dlo = 0.08 * lo * (1 - lo / Math.max(0.1, Klo_dyn)) * mods.predatorSurvival
+            - 0.014 * sb * (lo / (lo + 8)) * mods.predatorSurvival
+            - 0.05 * lo * (5.0 / (u + 5.0))         // starvation w/o urchins
             + seed(lo, SPECIES.lobster.eq);
 
-    // SEA BASS — high predator; eats sheephead + lobster.
-    let dsb = 0.07 * sb * (1 - sb / Ksb) * mods.predatorSurvival
-            + 0.012 * sb * ((sh + lo) / (sh + lo + 8))
-            - 0.020 * sl * (sb / (sb + 3)) * mods.predatorSurvival
+    // SEA BASS — capacity scales with sheephead + lobster.
+    const Ksb_dyn = 0.55 * (sh + lo) + 0.5;
+    let dsb = 0.07 * sb * (1 - sb / Math.max(0.1, Ksb_dyn)) * mods.predatorSurvival
+            - 0.014 * sl * (sb / (sb + 6)) * mods.predatorSurvival
+            - 0.05 * sb * (6.5 / (sh + lo + 6.5))   // starvation w/o mid prey
             + seed(sb, SPECIES.seabass.eq);
 
-    // SEA LION — apex; eats sea bass.
-    let dsl = 0.06 * sl * (1 - sl / Ksl) * mods.predatorSurvival
-            + 0.012 * sl * (sb / (sb + 4))
+    // SEA LION — apex; capacity scales with sea bass.
+    const Ksl_dyn = 0.85 * sb + 0.3;
+    let dsl = 0.06 * sl * (1 - sl / Math.max(0.1, Ksl_dyn)) * mods.predatorSurvival
+            - 0.05 * sl * (5.0 / (sb + 5.0))        // starvation w/o sea bass
             + seed(sl, SPECIES.sealion.eq);
 
     // apply (clamp to display max)
@@ -3142,7 +3256,7 @@
     const W = 600, H = 280;
     Object.keys(SPECIES).forEach(name => {
       const arr = history[name];
-      const maxN = SPECIES[name].max;
+      const maxN = SPECIES[name].displayMax || SPECIES[name].max;
       const points = arr.map((v, i) => {
         const x = (i / 59) * W;
         const y = H - (v / maxN) * H;
@@ -3162,11 +3276,13 @@
 
     if (key === 'urchin-spike') {
       // sudden urchin boom + significantly reduced predation — long-lasting
-      SPECIES.urchin.pop = SPECIES.urchin.max;
+      SPECIES.urchin.pop = Math.max(SPECIES.urchin.pop, SPECIES.urchin.eq * 2.0);
       SPECIES.sheephead.pop *= 0.4;
       SPECIES.lobster.pop *= 0.5;
       mods.urchinGrowth = 2.4;
       mods.predatorSurvival = 0.55;
+      mods.kelpGrowth = 0.55;          // urchin barrens stress producer recovery
+      mods.grazingPressure = 2.2;      // urchins overgraze
       setStatus('alert', 'Urchin population spike. Grazing pressure on kelp critical.');
     }
     else if (key === 'predator-loss') {
@@ -3176,7 +3292,9 @@
       SPECIES.sealion.pop *= 0.10;
       SPECIES.lobster.pop *= 0.10;
       mods.predatorSurvival = 0.20;
-      mods.urchinGrowth = 1.5;
+      mods.urchinGrowth = 1.8;
+      mods.kelpGrowth = 0.7;           // unchecked grazing follows
+      mods.grazingPressure = 1.6;
       setStatus('alert', 'Predator collapse detected. Trophic regulation lost.');
     }
     else if (key === 'warming') {
@@ -3198,26 +3316,34 @@
       if (key === 'protect') {
         mods.predatorSurvival = 1.5;
         mods.urchinGrowth = 0.95;
+        mods.kelpGrowth = 0.9;
+        mods.grazingPressure = 1.3;
         setStatus('fixed', 'Predator protections deployed. Web stabilizing.');
       } else if (key === 'farm') {
         mods.kelpGrowth = 1.6;
         mods.urchinGrowth = 1.2;
+        mods.grazingPressure = 1.8;
         setStatus('partial', 'Kelp farming buffers loss. Urchin pressure persists.');
       } else if (key === 'pollution') {
-        mods.kelpGrowth = 1.1;
-        mods.urchinGrowth = 1.3;
+        mods.kelpGrowth = 0.7;
+        mods.urchinGrowth = 1.5;
+        mods.grazingPressure = 2.0;
         setStatus('partial', 'Cleaner water; mismatch with grazer-driven event.');
       }
     }
     else if (currentEvent === 'predator-loss') {
       if (key === 'protect') {
         mods.predatorSurvival = 1.8;
+        mods.kelpGrowth = 0.95;
+        mods.grazingPressure = 1.1;
         setStatus('fixed', 'Predator protections deployed. Recruitment resuming.');
       } else if (key === 'farm') {
         mods.kelpGrowth = 1.6;
+        mods.grazingPressure = 1.5;
         setStatus('partial', 'Kelp refuge created; predators still depleted.');
       } else if (key === 'pollution') {
-        mods.kelpGrowth = 1.1;
+        mods.kelpGrowth = 0.85;
+        mods.grazingPressure = 1.5;
         setStatus('partial', 'Habitat improved; missing predator pressure unresolved.');
       }
     }
@@ -4043,11 +4169,14 @@
       requestAnimationFrame(anim);
     }
 
-    // sea bass — evade: flip dir + speed boost for ~1s, with a wake puff
+    // sea bass — evade: flip dir + modest speed boost, with a wake puff.
+    // The burst used to be 4× normal speed for nearly a second, which made
+    // the bass dart off-screen and feel un-clickable on follow-up taps.
+    // Now it's a brief, tamer jink so you can still grab it again.
     function bassEvade(a){
       a.dir = -a.dir;
-      a.vx = a.dir * 2.6; // burst
-      a.swimSpeed = 0.16;
+      a.vx = a.dir * 1.4; // gentler burst (was 2.6)
+      a.swimSpeed = 0.12;
       // wake particles trailing behind the new heading
       for (let i = 0; i < 5; i++) {
         emitParticle(a.x - a.dir*4 + (Math.random()-0.5)*4, a.y + (Math.random()-0.5)*4, '#7ca8c0');
@@ -4057,7 +4186,7 @@
         if (!a.alive) return;
         a.vx = a.dir * 0.6;
         a.swimSpeed = 0.06;
-      }, 950);
+      }, 450); // shorter so the agent settles back to its drawn position fast
     }
 
     // sheephead — keystone tracking brackets that grow around it for ~2s
@@ -4133,20 +4262,33 @@
     // Hit radius matches each species' visible glyph + brackets envelope so the
     // contact "feels like" what's drawn. Vector tail (vec) is included since
     // it's a visible part of the agent. Slight padding (+2) for forgiveness.
-    const HIT = {
-      urchin:    7,
-      lobster:   8,
-      sheephead: 18,  // bumped — small star glyph hard to hit
-      seabass:   18,  // bumped — small triangle glyph hard to hit
-      sealion:   16
+    // Hit radii are expressed in CSS PIXELS (what the user actually sees).
+    // We convert to SVG units per-click using the current CTM scale so the
+    // hit area stays visually consistent at any viewport / zoom level.
+    // Previously these were in raw SVG units (e.g. 18) which mapped to only
+    // a handful of CSS pixels once the SVG was scaled down — that's why
+    // Sea Bass and Sheephead felt impossible to hit unless you nailed the
+    // glyph center.
+    const HIT_CSS_PX = {
+      urchin:    22,
+      lobster:   24,
+      sheephead: 38,  // generous — keystone, must feel easy to grab
+      seabass:   38,  // generous — fast predator
+      sealion:   42
     };
-    function nearestAgent(localX, localY){
+    function nearestAgent(localX, localY, svgPerCssPx){
       let best = null, bestRel = Infinity;
       const candidates = ['sealion','seabass','sheephead','lobster','urchin'];
       for (const name of candidates) {
-        const hit = HIT[name] + 2;
+        // base px → SVG units, plus 2 SVG-unit padding.
+        const baseHit = HIT_CSS_PX[name] * svgPerCssPx + 2;
         for (const a of agents[name]) {
           if (!a.alive || a.dying) continue;
+          // velocity grace: a fast-moving swimmer may already be a few units
+          // past where the user aimed by the time the click event fires. Pad
+          // the hit envelope by its current speed (in SVG units/frame) ×4.
+          const speed = Math.hypot(a.vx || 0, a.vy || 0);
+          const hit = baseHit + speed * 4;
           const d = Math.hypot(a.x - localX, a.y - localY);
           if (d > hit) continue;
           // normalize so a click 50% into one species' radius beats a click
@@ -4167,7 +4309,11 @@
       const ctm = svg.getScreenCTM();
       if (!ctm) return;
       const local = pt.matrixTransform(ctm.inverse());
-      const a = nearestAgent(local.x, local.y);
+      // CTM.a/.d encode CSS-px-per-SVG-unit; invert for SVG-units-per-CSS-px.
+      // Use the average so non-uniform scales (rare) still pick a sane value.
+      const scale = (Math.abs(ctm.a) + Math.abs(ctm.d)) / 2 || 1;
+      const svgPerCssPx = 1 / scale;
+      const a = nearestAgent(local.x, local.y, svgPerCssPx);
       if (!a) return;
       // claim the event so the kelp handler doesn't also fire
       ev.stopPropagation();
@@ -4183,6 +4329,98 @@
       const picked = spawnBubble(a, palOverride);
       if (a.name === 'lobster') lobsterFlash(a, !!(picked && picked.blue));
     }, true); // capture
+
+    // Cursor feedback — turn the cursor into a pointer whenever it's hovering
+    // a clickable contact (any animal agent or any kelp stipe). Throttled to
+    // one check per animation frame so it doesn't churn during fast moves.
+    let _hoverPending = false;
+    let _lastHover = false;
+    function checkHover(ev){
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return false;
+      const pt = svg.createSVGPoint();
+      pt.x = ev.clientX; pt.y = ev.clientY;
+      const local = pt.matrixTransform(ctm.inverse());
+      const scale = (Math.abs(ctm.a) + Math.abs(ctm.d)) / 2 || 1;
+      const svgPerCssPx = 1 / scale;
+      // animal agent under the cursor?
+      if (nearestAgent(local.x, local.y, svgPerCssPx)) return true;
+      // kelp stipe under the cursor? (matches the kelp-nibble hit test)
+      for (const a of agents.kelp) {
+        if (!a.alive || a.dying) continue;
+        const h = (a.el && a.el.__height) || 160;
+        if (Math.abs(a.x - local.x) > 12) continue;
+        if (local.y < a.y - h - 10 || local.y > a.y + 6) continue;
+        return true;
+      }
+      return false;
+    }
+    layer.addEventListener('mousemove', (ev) => {
+      if (_hoverPending) return;
+      _hoverPending = true;
+      requestAnimationFrame(() => {
+        _hoverPending = false;
+        const hit = checkHover(ev);
+        if (hit !== _lastHover) {
+          _lastHover = hit;
+          svg.style.cursor = hit ? 'pointer' : '';
+        }
+      });
+    });
+    layer.addEventListener('mouseleave', () => {
+      _lastHover = false;
+      svg.style.cursor = '';
+    });
+  })();
+</script>
+
+<!-- ============== ABOUT MODAL ============== -->
+<div class="about-overlay" id="aboutOverlay">
+  <div class="about-modal">
+    <button class="about-close" id="aboutClose" aria-label="Close">×</button>
+    <h2>About this model</h2>
+
+    <p>This is a simplified simulation of a <strong>Southern California giant kelp forest</strong> ecosystem (e.g. Channel Islands, Catalina Island), designed to teach <em>trophic cascades</em> and ecosystem dynamics aligned with NGSS MS-LS2 standards.</p>
+
+    <h3>Real-world basis</h3>
+    <p>The species and interactions in this simulation are grounded in published kelp forest research:</p>
+    <ul>
+      <li><strong>Sheephead &amp; spiny lobster</strong> as the primary urchin predators reflects real Southern California ecology — sea otters, the more famous urchin predator, are largely absent south of Point Conception. <cite>(Hamilton &amp; Caselle 2015; Eisaguirre et al. 2020)</cite></li>
+      <li><strong>Urchin barrens</strong> — large areas where urchins overgraze and eliminate kelp — are a real and growing phenomenon along the California coast since 2014. <cite>(Smith et al. 2021, PNAS)</cite></li>
+      <li><strong>The thermal anomaly</strong> disruption is modeled on the 2014–2016 Northeast Pacific marine heatwave, which devastated California kelp forests. <cite>(McPherson et al. 2021)</cite></li>
+      <li><strong>The predator collapse</strong> disruption echoes the sea star wasting disease epidemic (2013–present) that functionally extirpated <em>Pycnopodia helianthoides</em>, a key urchin predator. <cite>(Surma et al. 2025)</cite></li>
+    </ul>
+
+    <h3>Important simplifications</h3>
+    <p>To make the cascade visible and learnable, this model takes some liberties with reality:</p>
+    <ul>
+      <li>The food <em>web</em> is collapsed into a four-level food <em>chain</em>. In reality sea bass and sea lions eat many prey species; this model isolates one pathway for clarity.</li>
+      <li>Cascade strength is exaggerated. Recent research suggests larval recruitment, oceanographic regimes, and substrate complexity may matter as much as predation in controlling urchin populations. <cite>(Malakhoff &amp; Miller 2021; Langendorf et al. 2025)</cite></li>
+      <li>Population dynamics use logistic-style equations with prey-dependent carrying capacity. Real populations also depend on age structure, larval supply, disease, and stochastic events not modeled here.</li>
+      <li>Time is abstract — one "tick" is roughly seasonal, but populations respond faster than they would in nature so students can see results in minutes, not decades.</li>
+    </ul>
+
+    <h3>Learning goals (NGSS MS-LS2)</h3>
+    <ul>
+      <li><strong>MS-LS2-1</strong> — Effects of resource availability on populations (kelp ↔ urchin, urchin ↔ predators).</li>
+      <li><strong>MS-LS2-2</strong> — Patterns of predator-prey interaction across trophic levels.</li>
+      <li><strong>MS-LS2-4</strong> — How disruptions to one component affect all populations.</li>
+      <li><strong>MS-LS2-5</strong> — Evaluating intervention strategies (MPAs, restoration, climate policy) for maintaining biodiversity.</li>
+    </ul>
+
+    <p class="muted" style="margin-top:18px;">Designed as an instructional tool. For real research data, see Channel Islands National Park kelp monitoring program and PISCO long-term reef surveys.</p>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const overlay = document.getElementById('aboutOverlay');
+    const openBtn = document.getElementById('aboutBtn');
+    const closeBtn = document.getElementById('aboutClose');
+    if (openBtn) openBtn.addEventListener('click', () => overlay.classList.add('open'));
+    if (closeBtn) closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.classList.remove('open'); });
   })();
 </script>
 
