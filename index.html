@@ -1314,6 +1314,248 @@
   }
   .footer .right { color: var(--dim); }
 
+  /* ========================================================
+     MOBILE — adapt the desktop layout for ≤640px viewports
+     (most users will arrive by phone, scanning a QR code)
+     ======================================================== */
+  @media (max-width: 640px) {
+    body { font-size: 13px; }
+
+    /* tone down the scanline overlay so small text is legible */
+    body::after {
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 2px,
+        rgba(0,0,0,.08) 2px,
+        rgba(0,0,0,.08) 3px
+      );
+      opacity: .35;
+    }
+
+    .container { padding: 0 14px; }
+
+    /* TOPBAR: hide the meta cluster, just keep the doc id */
+    .topbar { padding: 8px 0; font-size: 10.5px; }
+    .topbar .meta { display: none !important; }
+    .topbar .row { gap: 8px; }
+
+    /* TITLE BLOCK: tighter padding */
+    .titleblock { padding: 28px 0 22px; }
+    .titleblock h1 { font-size: 30px; line-height: 1.08; margin-bottom: 12px; }
+    .titleblock h1 .lo { display: block; font-size: 0.72em; margin-top: 4px; }
+    .titleblock .abstract { font-size: 14.5px; line-height: 1.5; }
+
+    /* TERMINAL frame: tighter, less margin */
+    .terminal { margin: 24px 0 28px; }
+    .terminal::before { inset: 2px; }
+
+    .term-header {
+      padding: 8px 12px;
+      font-size: 9.5px;
+      letter-spacing: .12em;
+      gap: 8px;
+    }
+    .term-header .left { gap: 8px; min-width: 0; }
+    .term-header .left strong {
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .term-header .right { font-size: 9px; }
+    .term-header .right span { display: inline; }
+
+    /* ===== FOOD WEB — the trickiest piece on small screens =====
+       Nodes are absolute-positioned by % of stage width.
+       We shrink the node footprint, the silhouette, the type, and
+       drop the right-side gutter so nodes can use full width. */
+    .foodweb { padding: 12px 12px 14px; }
+    .foodweb .head { margin-bottom: 8px; flex-wrap: wrap; gap: 4px 10px; }
+    .foodweb .head h4 { font-size: 9px; letter-spacing: .14em; }
+    .foodweb .head .span { font-size: 8.5px; }
+
+    .fw-stage {
+      height: 360px;
+      padding-right: 36px;
+    }
+    .fw-gutter { width: 34px; }
+    .fw-gutter .glbl {
+      font-size: 7px;
+      letter-spacing: .08em;
+      line-height: 1.1;
+      right: 4px;
+    }
+    .fw-tier { right: 34px; }
+
+    .fw-node {
+      width: 64px;
+      padding: 3px 4px 3px;
+    }
+    .fw-node .silhouette {
+      height: 22px;
+      margin-bottom: 2px;
+    }
+    .fw-node .silhouette svg { height: 18px; }
+    .fw-node .common {
+      font-size: 9.5px;
+      letter-spacing: .03em;
+    }
+    .fw-node .latin {
+      display: none; /* save space; common name is enough on phones */
+    }
+    .fw-node .meta {
+      font-size: 6.5px;
+      padding-top: 2px;
+      letter-spacing: .04em;
+    }
+    .fw-node .meta .tier { display: none; } /* gutter labels carry tier */
+
+    /* L3 has three nodes packed close together (sheephead 0.28,
+       ghost 0.50, seabass 0.66). Stagger them vertically a little so
+       the cards don't overlap horizontally on a narrow stage. */
+    .fw-node[data-species="sheephead"] { margin-top: -16px; }
+    .fw-node[data-species="seabass"]   { margin-top: -16px; }
+
+    .fw-node.ghost {
+      width: 56px;
+      padding: 3px 4px 3px;
+    }
+    .fw-node.ghost .silhouette { height: 24px; }
+    .fw-node.ghost .silhouette svg { height: 20px; }
+    .fw-node.ghost .common { font-size: 9px; }
+
+    .otter-pop {
+      width: 200px;
+      font-size: 10px;
+      padding: 8px 10px 9px;
+    }
+    .otter-pop strong { font-size: 8.5px; letter-spacing: .16em; }
+    .otter-pop .body { font-size: 9.5px; }
+
+    /* ===== STAGE (ocean + graph) — already stacks below 880px,
+       just tighten everything ===== */
+    .ocean {
+      aspect-ratio: 4/3.4;
+    }
+    .ocean-overlay {
+      top: 8px; left: 12px;
+      font-size: 9px;
+      letter-spacing: .1em;
+    }
+    .ocean-corner {
+      bottom: 6px; right: 10px;
+      font-size: 8.5px;
+      letter-spacing: .1em;
+    }
+    .ocean-depth { width: 28px; }
+    .ocean-reticle { width: 16px; height: 16px; }
+
+    /* graph side */
+    .graph-wrap { min-height: 200px; }
+    .legend {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3px 12px;
+      font-size: 10px;
+    }
+    .legend-row .name { font-size: 9.5px; }
+
+    /* ===== SPECIES BARS — 6 cols too tight, go 3x2 ===== */
+    .barrow {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .bar-cell {
+      padding: 9px 9px 8px;
+      gap: 4px;
+      border-bottom: 1px solid var(--line);
+    }
+    .bar-cell:nth-child(3n) { border-right: 0; }
+    .bar-cell:nth-last-child(-n+3) { border-bottom: 0; }
+    .bar-name { font-size: 8.5px; letter-spacing: .1em; }
+    .bar-val { font-size: 14px; }
+    .bar-meta { font-size: 7.5px; letter-spacing: .08em; }
+
+    /* ===== HEALTH ROW ===== */
+    .health-row { padding: 12px 14px 10px; }
+    .health-head .l { font-size: 9px; letter-spacing: .14em; }
+    .health-head .v { font-size: 18px; height: 18px; }
+    .health-head .v .reel { height: 18px; line-height: 18px; }
+    .health-head .v .reel > span { height: 18px; line-height: 18px; }
+
+    /* status console (right side of term-body) */
+    .console-side, .status-row { font-size: 10.5px; }
+    .status-row .lbl { font-size: 9px; letter-spacing: .14em; }
+    .status-line { font-size: 11px; }
+
+    /* ===== CONSOLE (control deck): 3 cols → 1 col ===== */
+    .console { padding: 14px 12px; }
+    .console h5 { font-size: 9.5px; letter-spacing: .16em; }
+    .row-cards {
+      grid-template-columns: 1fr;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .ec-btn {
+      min-height: auto;
+      padding: 9px 11px;
+      font-size: 11px;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ec-btn .lbl { font-size: 8.5px; letter-spacing: .16em; flex-shrink: 0; }
+    .ec-btn .ref { font-size: 9.5px; flex-basis: 100%; margin-top: 2px; }
+
+    .console-foot {
+      font-size: 9.5px;
+      letter-spacing: .1em;
+      gap: 8px;
+      padding-top: 10px;
+    }
+    .reset-btn {
+      padding: 5px 10px;
+      font-size: 9.5px;
+      letter-spacing: .1em;
+    }
+
+    /* ===== ABOUT MODAL ===== */
+    .about-overlay { padding: 14px; }
+    .about-modal {
+      padding: 22px 18px 20px;
+      max-height: 90vh;
+      font-size: 11.5px;
+    }
+    .about-modal h2 { font-size: 10px; letter-spacing: .2em; padding-bottom: 8px; margin-bottom: 14px; }
+    .about-modal h3 { font-size: 9.5px; letter-spacing: .18em; }
+    .about-close { top: 12px; right: 14px; }
+
+    /* ===== DOCS ===== */
+    .docs { padding: 36px 0 24px; }
+    .docs-grid { gap: 22px; }
+    .docs-side { font-size: 10px; letter-spacing: .12em; }
+    .docs h3 { font-size: 18px; margin-bottom: 14px; }
+    .phase-row .desc { font-size: 13.5px; line-height: 1.5; }
+
+    /* ===== FILES / FOOTER ===== */
+    .files-grid p.lead { font-size: 13px; }
+    .footer { padding: 18px 0 32px; font-size: 9.5px; letter-spacing: .1em; }
+    .footer .row { gap: 8px; }
+  }
+
+  /* extra-small — sub-380px (older / cramped phones) */
+  @media (max-width: 380px) {
+    .titleblock h1 { font-size: 26px; }
+    .fw-node { width: 56px; }
+    .fw-node .common { font-size: 8.5px; }
+    .fw-stage { height: 340px; }
+    .barrow { grid-template-columns: repeat(2, 1fr); }
+    .bar-cell { border-right: 1px solid var(--line); }
+    .bar-cell:nth-child(2n) { border-right: 0; }
+    .bar-cell:nth-last-child(-n+2) { border-bottom: 0; }
+    .bar-cell:nth-last-child(3) { border-bottom: 1px solid var(--line); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: .001ms !important;
